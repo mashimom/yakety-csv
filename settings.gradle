@@ -8,4 +8,3 @@
  */
 
 rootProject.name = 'yakety-csv'
-include('lib')
