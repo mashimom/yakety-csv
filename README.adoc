@@ -5,6 +5,7 @@ fdef::env-github[]
 :caution-caption: :fire:
 :warning-caption: :warning:
 endif::[]
+:source-highlighter: rouge
 :toc:
 :toc-placement!:
 
@@ -70,3 +71,27 @@ toc::[]
     - [ ] column definition interface
     - [ ] file format configuration
     - [ ] parser localization
+
+== How to build
+
+=== Environment setup requirements
+
+Java 15 is needed, get it with SDKMan
+Gradle configuration recommended, ~/.gradle/gradle.properties:
+
+[source, properties]
+---
+org.gradle.parallel=true
+org.gradle.jvmargs=-Xmx2048M
+org.gradle.caching=true
+org.gradle.daemon.idletimeout=1800000
+org.gradle.java.home=/home/user/.sdkman/candidates/java/15.0.2-open # <1>
+---
+<1> your own path for the JDK 15
+
+== _TL;DR_
+
+[source, shell]
+---
+./gradlew
+---
