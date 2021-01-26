@@ -1,0 +1,17 @@
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+:toc:
+:toc-placement!:
+
+# yakety-csv
+
+The yakety-csv or Yet-Another-Know-Everything-T*-Y*-CSV library.
+
+IMPORTANT: There are plenty implementations out there, please look for them, this is an exercise.
+
+toc::[]
