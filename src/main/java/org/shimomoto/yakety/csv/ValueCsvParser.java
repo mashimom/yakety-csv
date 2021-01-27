@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Slf4j
-public class ValueCsvParser implements CsvParser<String, Stream<String>> {
+public class ValueCsvParser implements CsvParser<Stream<Stream<String>>> {
 
 	//TODO: fix for windows line endings
 	//TODO: fix for quoted line breaks
