@@ -7,18 +7,19 @@ import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
 
-class CsvParserSpec extends Specification {
+class ValueCsvParserSpec extends Specification {
 
 	@Subject
-	CsvParser parser = new CsvParser()
+	ValueCsvParser parser = new ValueCsvParser()
 
 	@Unroll
-	def "lineSplit of #values works"() {
+	def "lineSplit of #values #lbr, works"() {
 		given:
-		def content = values.join('\n')
+		def content = values.join(lbr == 'LF' ? '\n' : '\r\n')
 
 		when:
-		def result = CsvParser.lineSplit(new Scanner(content)).collect(Collectors.toList())
+		//noinspection GroovyAccessibility
+		def result = ValueCsvParser.lineSplit(ValueCsvParser.lineRegex, new Scanner(content)).collect(Collectors.toList())
 
 		then:
 		result.size() == values.size()
@@ -26,20 +27,26 @@ class CsvParserSpec extends Specification {
 
 		where:
 		_ | values                    | lbr
-		0 | ['']                      | '\n'
-		1 | ['a', '']                 | '\n'
-		2 | ['', 'b']                 | '\n'
-		3 | ['a', 'b']                | '\n'
-		4 | ['a\t', 'b,c,d', 'e,f,g'] | '\n'
+		0 | ['']                      | 'LF'
+		0 | ['']                      | 'CRLF'
+		1 | ['a', '']                 | 'LF'
+		1 | ['a', '']                 | 'CRLF'
+		2 | ['', 'b']                 | 'LF'
+		2 | ['', 'b']                 | 'CRLF'
+		3 | ['a', 'b']                | 'LF'
+		3 | ['a', 'b']                | 'CRLF'
+		4 | ['a\t', 'b,c,d', 'e,f,g'] | 'LF'
+		4 | ['a\t', 'b,c,d', 'e,f,g'] | 'CRLF'
 	}
 
 	@Unroll
 	def "lineSplit of #values fails"() {
 		given:
-		def content = values.join('\n')
+		def content = values.join(lbr == 'LF' ? '\n' : '\r\n')
 
 		when:
-		def result = CsvParser.lineSplit(new Scanner(content)).collect(Collectors.toList())
+		//noinspection GroovyAccessibility
+		def result = ValueCsvParser.lineSplit(ValueCsvParser.lineRegex, new Scanner(content)).collect(Collectors.toList())
 
 		then:
 		result.size() != values.size()
@@ -47,7 +54,7 @@ class CsvParserSpec extends Specification {
 
 		where:
 		_ | values                        | lbr
-		0 | ['n\t', '"b,\nc,d"', 'e,f,g'] | '\n' //quoted line breaks
+		0 | ['n\t', '"b,\nc,d"', 'e,f,g'] | 'LF' //quoted line breaks
 	}
 
 	@Unroll
@@ -60,7 +67,7 @@ class CsvParserSpec extends Specification {
 
 		when:
 		//noinspection GroovyAccessibility
-		def result = CsvParser.fieldSplit(CsvParser.fieldRegex, content).collect(Collectors.toList())
+		def result = ValueCsvParser.fieldSplit(ValueCsvParser.fieldRegex, content).collect(Collectors.toList())
 
 		then:
 		result.size() == values.size()
@@ -86,7 +93,7 @@ class CsvParserSpec extends Specification {
 		def content = lines.collect { it.join(',') }.join('\n')
 
 		when:
-		List<Stream<String>> result = parser.parse(new Scanner(content))
+		List<Stream<String>> result = parser.parseFromScanner(new Scanner(content))
 						.map({ s -> s.collect(Collectors.toList()) })
 						.collect(Collectors.toList())
 

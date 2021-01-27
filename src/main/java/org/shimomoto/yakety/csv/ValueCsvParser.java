@@ -2,6 +2,7 @@ package org.shimomoto.yakety.csv;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.shimomoto.yakety.csv.api.CsvParser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,47 +13,49 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Slf4j
-public class CsvParser {
+public class ValueCsvParser implements CsvParser<String, Stream<String>> {
 
 	//TODO: fix for windows line endings
 	//TODO: fix for quoted line breaks
-	private static final Pattern lineRegex = Pattern.compile("(?<=^|\\n)(.*?)(?=\\n|$)");
+	private static final Pattern lineRegex = Pattern.compile("(?<=^|(?:\\r?\\n))(.*?)(?=(?:\\r?\\n)|$)");
 	private static final Pattern fieldRegex =
 					Pattern.compile("(?:(?:(?<=^|,)(?<!\")\"(.*?)(?<!\")\"(?=,|$))|(?:(?<=^|,)(.*?)(?=,|$)))+");
 
-	private static Stream<String> lineSplit(Scanner scanner) {
+	private static Stream<String> lineSplit(@NotNull final Pattern pattern, final Scanner scanner) {
 		return scanner
-						.findAll(lineRegex)
+						.findAll(pattern)
 						.map(MatchResult::group);
 	}
 
 	private static Stream<String> fieldSplit(@SuppressWarnings("SameParameterValue")
 	                                         @NotNull final Pattern pattern,
 	                                         @NotNull final String line) {
-		return new Scanner(line)
-						.findAll(pattern)
-						.map(MatchResult::group);
+		return lineSplit(pattern, new Scanner(line));
 	}
 
+	@Override
 	public @NotNull Stream<Stream<String>> parse(final String content) {
-		return parse(new Scanner(content));
+		return parseFromScanner(new Scanner(content));
 	}
 
+	@Override
 	public @NotNull Stream<Stream<String>> parse(final File file) {
 		try {
-			return parse(new Scanner(file));
-		} catch (FileNotFoundException e) {
+			return parseFromScanner(new Scanner(file));
+		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		}
 		return Stream.empty();
 	}
 
+	@Override
 	public @NotNull Stream<Stream<String>> parse(final InputStream input) {
-		return parse(new Scanner(input));
+		return parseFromScanner(new Scanner(input));
 	}
 
-	public @NotNull Stream<Stream<String>> parse(Scanner scanner) {
-		return lineSplit(scanner)
+	@NotNull
+	private Stream<Stream<String>> parseFromScanner(final Scanner scanner) {
+		return lineSplit(lineRegex, scanner)
 						.map(l -> fieldSplit(fieldRegex, l));
 	}
 }
