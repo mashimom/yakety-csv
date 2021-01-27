@@ -29,8 +29,8 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-        run: ./gradlew clean printVersion classes projectReport buildDashboard
-      - name: testing
-        run: ./gradlew check
-      - name: assembling
-        run: ./gradlew jar
+      run: ./gradlew clean printVersion classes projectReport buildDashboard
+    - name: testing
+      run: ./gradlew check
+    - name: assembling
+      run: ./gradlew jar
