@@ -13,15 +13,54 @@ class CsvParserSpec extends Specification {
 	CsvParser parser = new CsvParser()
 
 	@Unroll
-	def "lineSplit of #values"() {
+	def "lineSplit of #values works"() {
+		given:
+		def content = values.join('\n')
+
+		when:
+		def result = CsvParser.lineSplit(new Scanner(content)).collect(Collectors.toList())
+
+		then:
+		result.size() == values.size()
+		result == values
+
+		where:
+		_ | values                    | lbr
+		0 | ['']                      | '\n'
+		1 | ['a', '']                 | '\n'
+		2 | ['', 'b']                 | '\n'
+		3 | ['a', 'b']                | '\n'
+		4 | ['a\t', 'b,c,d', 'e,f,g'] | '\n'
+	}
+
+	@Unroll
+	def "lineSplit of #values fails"() {
+		given:
+		def content = values.join('\n')
+
+		when:
+		def result = CsvParser.lineSplit(new Scanner(content)).collect(Collectors.toList())
+
+		then:
+		result.size() != values.size()
+		result != values
+
+		where:
+		_ | values                        | lbr
+		0 | ['n\t', '"b,\nc,d"', 'e,f,g'] | '\n' //quoted line breaks
+	}
+
+	@Unroll
+	def "fieldSplit of #values works"() {
 		given:
 		def content = values.join(',')
 //		def pattern = ~'(?:(?<=^|,)(.*?)(?=,|$)))+' //no quotes
 //		def pattern = ~'(?:(?:(?<=^|,)"(.*?)"(?=,|$))|(?:(?<=^|,)(.*?)(?=,|$)))+' //no double quotes
-		def pattern = ~'(?:(?:(?<=^|,)(?<!")"(.*?)(?<!")"(?=,|$))|(?:(?<=^|,)(.*?)(?=,|$)))+' //complete
+//		def pattern = ~'(?:(?:(?<=^|,)(?<!")"(.*?)(?<!")"(?=,|$))|(?:(?<=^|,)(.*?)(?=,|$)))+' //complete
 
 		when:
-		def result = CsvParser.lineSplit(pattern, content).collect(Collectors.toList())
+		//noinspection GroovyAccessibility
+		def result = CsvParser.fieldSplit(CsvParser.fieldRegex, content).collect(Collectors.toList())
 
 		then:
 		result.size() == values.size()
@@ -47,7 +86,7 @@ class CsvParserSpec extends Specification {
 		def content = lines.collect { it.join(',') }.join('\n')
 
 		when:
-		List<Stream<String>> result = parser.parse(content)
+		List<Stream<String>> result = parser.parse(new Scanner(content))
 						.map({ s -> s.collect(Collectors.toList()) })
 						.collect(Collectors.toList())
 
