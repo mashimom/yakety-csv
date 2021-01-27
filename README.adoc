@@ -47,7 +47,7 @@ toc::[]
 * `v0.0.X` - empty project that compiles
 * `v0.1.X` - stream String value of fields from a csv using strict RFC4180
 * `v0.2.X` - Enable column configuration
-* `v0.3.X`? - Proper handle of quotes
+* `v0.3.X`?- Proper handle of quotes
 * `v1.0.X` - stream Map.Entry of String values by column (RFC4180)
 * `v1.1.X` - nullable columns (map stream cannot take null values)
 * `v1.2.X` - proper limited parsing of int and double
@@ -63,23 +63,22 @@ toc::[]
 == Tasks
 
 . setup project:
-    - [x] gradle
-    - [x] spock tests
-    - [x] spock integration tests
-    - [x] git ignores
+- [x] gradle
+- [x] spock tests
+- [x] spock integration tests
+- [x] git ignores
 . functionalities:
-    - [ ] column definition interface
-    - [ ] file format configuration
-    - [ ] parser localization
+- [x] column definition interface
+- [ ] file format configuration
+- [ ] parser localization
 
 == How to build
 
 === Environment setup requirements
 
-Java 15 is needed, get it with SDKMan
-Gradle configuration recommended, ~/.gradle/gradle.properties:
+Java 15 is needed, get it with SDKMan Gradle configuration recommended, ~/.gradle/gradle.properties:
 
-[source, properties]
+[source,properties]
 ---
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xmx2048M
