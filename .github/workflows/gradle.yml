@@ -34,3 +34,9 @@ jobs:
       run: ./gradlew check
     - name: assembling
       run: ./gradlew jar
+    - name: Save artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: save jar file
+        path: build/libs
+        retention-days: 1
