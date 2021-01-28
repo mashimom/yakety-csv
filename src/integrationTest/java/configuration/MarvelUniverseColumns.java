@@ -12,12 +12,12 @@ public enum MarvelUniverseColumns implements ColumnDefinition {
 
 	public final @NotNull String name;
 
-	MarvelUniverseColumns(@NotNull String name) {
+	MarvelUniverseColumns(@NotNull final String name) {
 		this.name = name;
 	}
 
 	@Override
-	public String getName() {
+	public @NotNull String getName() {
 		return name;
 	}
 
