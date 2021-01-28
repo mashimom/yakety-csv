@@ -10,11 +10,13 @@ import org.shimomoto.yakety.csv.api.ParserConfiguration;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Deprecated
 public class CsvParserFactory {
 
+	@Deprecated
 	enum Options {
 		TRIM_HEADERS_AND_FIELDS,
-		NO_EMPTY_LINE_AT_END;
+		NO_EMPTY_LINE_AT_END
 	}
 
 	static CsvParser<Stream<List<String>>> simple() {
@@ -24,6 +26,7 @@ public class CsvParserFactory {
 	@SuppressWarnings("InnerClassMayBeStatic")
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+	@Deprecated
 	class ColumnDefinitionConfiguration<C extends ColumnDefinition> implements ParserConfiguration<C> {
 		List<C> cols;
 
@@ -36,6 +39,7 @@ public class CsvParserFactory {
 	@SuppressWarnings("InnerClassMayBeStatic")
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+	@Deprecated
 	class ColumnStringConfiguration implements ParserConfiguration<String> {
 		List<String> cols;
 
@@ -48,6 +52,7 @@ public class CsvParserFactory {
 	@SuppressWarnings("InnerClassMayBeStatic")
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+	@Deprecated
 	class ColumnIndexConfiguration implements ParserConfiguration<Integer> {
 		List<Integer> cols;
 

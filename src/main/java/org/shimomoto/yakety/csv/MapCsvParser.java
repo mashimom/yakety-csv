@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Deprecated
 public class MapCsvParser<K> implements CsvParser<Stream<Map<K, String>>> {
 	CsvParser<Stream<Stream<String>>> delegate;
 	List<K> columns;
