@@ -13,13 +13,13 @@ class ValueCsvParserSpec extends Specification {
 	ValueCsvParser parser = new ValueCsvParser()
 
 	@Unroll
-	def "lineSplit of #values #lbr, works"() {
+	def "scannerSplit of #values #lbr, works"() {
 		given:
 		def content = values.join(lbr == 'LF' ? '\n' : '\r\n')
 
 		when:
 		//noinspection GroovyAccessibility
-		def result = ValueCsvParser.lineSplit(ValueCsvParser.lineRegex, new Scanner(content)).collect(Collectors.toList())
+		def result = ValueCsvParser.scannerSplit(ValueCsvParser.lineRegex, new Scanner(content)).collect(Collectors.toList())
 
 		then:
 		result.size() == values.size()
@@ -40,13 +40,13 @@ class ValueCsvParserSpec extends Specification {
 	}
 
 	@Unroll
-	def "lineSplit of #values fails"() {
+	def "scannerSplit of #values fails"() {
 		given:
 		def content = values.join(lbr == 'LF' ? '\n' : '\r\n')
 
 		when:
 		//noinspection GroovyAccessibility
-		def result = ValueCsvParser.lineSplit(ValueCsvParser.lineRegex, new Scanner(content)).collect(Collectors.toList())
+		def result = ValueCsvParser.scannerSplit(ValueCsvParser.lineRegex, new Scanner(content)).collect(Collectors.toList())
 
 		then:
 		result.size() != values.size()
@@ -67,7 +67,7 @@ class ValueCsvParserSpec extends Specification {
 
 		when:
 		//noinspection GroovyAccessibility
-		def result = ValueCsvParser.fieldSplit(ValueCsvParser.fieldRegex, content).collect(Collectors.toList())
+		def result = ValueCsvParser.fieldSplit(ValueCsvParser.fieldRegex, content)
 
 		then:
 		result.size() == values.size()
@@ -94,7 +94,6 @@ class ValueCsvParserSpec extends Specification {
 
 		when:
 		List<Stream<String>> result = parser.parseFromScanner(new Scanner(content))
-						.map({ s -> s.collect(Collectors.toList()) })
 						.collect(Collectors.toList())
 
 		then:

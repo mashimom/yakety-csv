@@ -47,11 +47,14 @@ repositories {
 }
 
 dependencies {
+    annotationProcessor 'org.jetbrains:annotations:20.1.0'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
     compileOnly 'org.jetbrains:annotations:20.1.0'
     compileOnly 'org.projectlombok:lombok:1.18.16'
 
     implementation 'com.codepoetics:protonpack:1.16'
     implementation 'ch.qos.logback:logback-classic:1.2.3'
+    implementation 'org.apache.commons:commons-text:1.9'
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.codehaus.groovy:groovy-all:2.5.14'
@@ -63,6 +66,9 @@ dependencies {
 
     testRuntime 'cglib:cglib-nodep:3.1'
     testRuntime 'org.objenesis:objenesis:2.1'
+
+    integrationTestCompileOnly 'org.projectlombok:lombok:1.18.16'
+    integrationTestCompileOnly 'org.jetbrains:annotations:20.1.0'
 }
 
 test {
