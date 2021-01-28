@@ -3,11 +3,13 @@ import java.util.stream.Stream
 
 import org.shimomoto.yakety.csv.CsvParserFactory
 import org.shimomoto.yakety.csv.api.CsvParser
+import spock.lang.Ignore
 import spock.lang.Specification
 
 
 class MarvelIT extends Specification {
 
+	@Ignore
 	def "Create simplets parser"() {
 		given:
 		def headers = ['Title', ' Release date', ' Phase', ' Film/TV', ' In-universe year']
