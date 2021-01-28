@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
+@Deprecated
 public class ValueCsvParser implements CsvParser<Stream<List<String>>> {
 
 	private final boolean trim = false;

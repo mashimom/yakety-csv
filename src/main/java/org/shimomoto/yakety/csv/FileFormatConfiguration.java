@@ -12,7 +12,7 @@ import java.util.Locale;
 @Builder(toBuilder = true)
 @Value
 @Slf4j
-public class ParserConfigurationRedux {
+public class FileFormatConfiguration {
 	@Builder.Default
 	Locale parserLocale = Locale.US;
 	@Builder.Default
@@ -22,11 +22,11 @@ public class ParserConfigurationRedux {
 	@Builder.Default
 	char quote = '"';
 	@Builder.Default
-	boolean trim = false;
+	boolean trim = false; //TODO: move to column by column option
 //	@Builder.Default
-//	int skipFromTop = 0;
+//	int skipFromTop = 0; //TODO: move to content configuration
 //	@Builder.Default
-//	boolean headerless = false;
+//	boolean headerless = false; //TODO: move to content configuration
 //	@Builder.Default
-//	boolean endsWithEmptyLine = true;
+//	boolean endsWithEmptyLine = true; //TODO: move to content configuration, maybe?
 }

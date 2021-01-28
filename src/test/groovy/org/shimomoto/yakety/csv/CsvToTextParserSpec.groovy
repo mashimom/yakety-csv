@@ -6,19 +6,19 @@ import java.util.stream.Collectors
 import spock.lang.Specification
 import spock.lang.Subject
 
-class ValueCsvParserReduxSpec extends Specification {
+class CsvToTextParserSpec extends Specification {
 
-	ParserConfigurationRedux config
+	FileFormatConfiguration config
 	@Subject
-	ValueCsvParserRedux parser
+	CsvToTextParser parser
 
 	@SuppressWarnings('GroovyAccessibility')
 	def "Create new parser from default configuration"() {
 		given:
-		config = ParserConfigurationRedux.builder().build()
+		config = FileFormatConfiguration.builder().build()
 
 		when:
-		parser = ValueCsvParserRedux.from(config)
+		parser = CsvToTextParser.from(config)
 
 		then:
 		parser.lineBreakRegex.toString() == '\\n(?=([^"]*"[^"]*")*[^"]*$)'
@@ -30,7 +30,7 @@ class ValueCsvParserReduxSpec extends Specification {
 	@SuppressWarnings('GroovyAccessibility')
 	def "Create new parser from custom configuration"() {
 		given:
-		config = ParserConfigurationRedux.builder()
+		config = FileFormatConfiguration.builder()
 						.parserLocale(Locale.forLanguageTag('pt-BR'))
 						.lineBreak('\r\n')
 						.separator(';' as char)
@@ -39,7 +39,7 @@ class ValueCsvParserReduxSpec extends Specification {
 						.build()
 
 		when:
-		parser = ValueCsvParserRedux.from(config)
+		parser = CsvToTextParser.from(config)
 
 		then:
 		parser.lineBreakRegex.toString() == '\\r\\n(?=([^|]*|[^|]*|)*[^|]*$)'
@@ -50,7 +50,7 @@ class ValueCsvParserReduxSpec extends Specification {
 
 	def "Parse a simple sample with defaults"() {
 		given:
-		parser = ValueCsvParserRedux.from(ParserConfigurationRedux.builder().trim(true).build())
+		parser = CsvToTextParser.from(FileFormatConfiguration.builder().trim(true).build())
 		def content = '''\
 								Title,                              Release date, Phase, Film/TV, In-universe year
 								Iron Man,                           2008-05-02,   1,     Film,    2008
@@ -71,7 +71,7 @@ class ValueCsvParserReduxSpec extends Specification {
 
 	def "Parse a complex sample"() {
 		given:
-		parser = ValueCsvParserRedux.from(ParserConfigurationRedux.builder().build())
+		parser = CsvToTextParser.from(FileFormatConfiguration.builder().build())
 		def content = '''\
 						Make,Model,Description,Price
 						Dell,P3421W,"Dell 34, Curved, USB-C Monitor",2499.00
