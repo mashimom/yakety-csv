@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Slf4j
 public class CsvToTextParser extends BaseCsvParser<Stream<List<String>>> implements CsvParser<Stream<List<String>>> {
 	private CsvToTextParser(final Pattern lineBreakRegex, final Pattern fieldRegex, final char quote, final boolean trim) {
@@ -35,7 +35,7 @@ public class CsvToTextParser extends BaseCsvParser<Stream<List<String>>> impleme
 	}
 
 	@Override
-	protected Stream<List<String>> parseLines(final Scanner scanner) {
+	protected Stream<List<String>> parseLines(final @NotNull Scanner scanner) {
 		return scanner.useDelimiter(super.getLineBreakRegex())
 						.tokens()
 						.map(this::getFieldsFromLine);
