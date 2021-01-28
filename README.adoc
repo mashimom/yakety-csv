@@ -11,7 +11,7 @@ endif::[]
 
 = yakety-csv
 
-The yakety-csv or Yet-Another-Know-Everything-T*-Y*-CSV library.
+The yakety-csv or _Yet-Another-Know-Everything-Tentative-Yap-CSV_ library.
 
 IMPORTANT: There are plenty implementations out there, please look for them, this is an exercise.
 
@@ -84,19 +84,18 @@ toc::[]
 Java 15 is needed, get it with SDKMan Gradle configuration recommended, ~/.gradle/gradle.properties:
 
 [source,properties]
----
-
+-----------------------------------------------------------
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xmx2048M
 org.gradle.caching=true
 org.gradle.daemon.idletimeout=1800000
 org.gradle.java.home=/home/user/.sdkman/candidates/java/15.0.2-open # <1>
----
+-----------------------------------------------------------
 <1> your own path for the JDK 15
 
 == _TL;DR_
 
 [source,shell]
----
+-----------------------------------------------------------
 ./gradlew
----
+-----------------------------------------------------------
