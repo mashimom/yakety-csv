@@ -68,9 +68,14 @@ toc::[]
 - [x] spock integration tests
 - [x] git ignores
 . functionalities:
-- [x] column definition interface
-- [ ] file format configuration
+- [x] simple csv to stream of fields
+- [x] configurable parser
+- [x] file format configuration
+- [ ] column definition interface
+- [ ] configurable csv columns to stream of String fieldByColumnName maps
 - [ ] parser localization
+- [ ] configurable csv columns with type coercion (to stream of fieldByColumnName maps? types need casting)
+- [ ] configurable csv columns with type coercion to list of objects
 
 == How to build
 
@@ -80,6 +85,7 @@ Java 15 is needed, get it with SDKMan Gradle configuration recommended, ~/.gradl
 
 [source,properties]
 ---
+
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xmx2048M
 org.gradle.caching=true
@@ -90,7 +96,7 @@ org.gradle.java.home=/home/user/.sdkman/candidates/java/15.0.2-open # <1>
 
 == _TL;DR_
 
-[source, shell]
+[source,shell]
 ---
 ./gradlew
 ---
