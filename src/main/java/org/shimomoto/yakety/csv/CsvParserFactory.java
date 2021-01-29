@@ -5,9 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.shimomoto.yakety.csv.api.CsvParser;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @UtilityClass
@@ -18,23 +17,29 @@ public class CsvParserFactory {
 						.orElseGet(() -> CsvToTextParser.from(FileFormatConfiguration.builder().build()));
 	}
 
-	public static CsvParser<Stream<Map<String, String>>> toTextMap(@Nullable final FileFormatConfiguration ffc, @NotNull final List<String> columnNames) {
+	public static <C> CsvParser<Stream<Map<C, String>>> toTextMap(@Nullable final FileFormatConfiguration ffc,
+	                                                              @NotNull final List<C> columnNames) {
+		final Set<C> columnsAsSet = new HashSet<>(columnNames);
+		if (columnsAsSet.size() != columnNames.size()) {
+			throw new IllegalArgumentException("At least one of the columns are duplicated, which is not allowed");
+		}
 		return Optional.ofNullable(ffc)
 						.map(c -> CsvToTextMapParser.from(c, columnNames))
 						.orElseGet(() -> CsvToTextMapParser.from(FileFormatConfiguration.builder().build(), columnNames));
 	}
 
-	public static CsvParser<Stream<Map<String, String>>> toRowIndexedTextMap(@Nullable final FileFormatConfiguration ffc,
-	                                                                         @Nullable final String indexColName,
-	                                                                         @NotNull final List<String> columnNames) {
-		final String icn = Optional.ofNullable(indexColName)
-						.orElse("_");
-		if (columnNames.contains(icn)) {
-			throw new IllegalArgumentException("Indexed column must not exist on the file");
+	public static <C> CsvParser<Stream<Map<C, String>>> toRowIndexedTextMap(@Nullable final FileFormatConfiguration ffc,
+	                                                                        @NotNull final C indexColName,
+	                                                                        @NotNull final List<C> columnNames) {
+		//TODO: check if there is no repeated column, add all to a set and check sizes
+		final Set<C> columnsAsSet = Stream.concat(Stream.of(indexColName), columnNames.stream())
+						.collect(Collectors.toSet());
+		if (columnsAsSet.size() != columnNames.size() + 1) {
+			throw new IllegalArgumentException("At least one of the columns are duplicated, which is not allowed");
 		}
 		return Optional.ofNullable(ffc)
-						.map(c -> CsvToRowIndexedTextMapParser.from(c, icn, columnNames))
-						.orElseGet(() -> CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), icn, columnNames));
+						.map(c -> CsvToRowIndexedTextMapParser.from(c, indexColName, columnNames))
+						.orElseGet(() -> CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), indexColName, columnNames));
 	}
 
 	@SuppressWarnings("unused")

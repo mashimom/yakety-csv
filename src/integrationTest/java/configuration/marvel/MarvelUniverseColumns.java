@@ -1,9 +1,9 @@
-package configuration;
+package configuration.marvel;
 
+import configuration.marvel.api.IMarvelUniverseColumn;
 import org.jetbrains.annotations.NotNull;
-import org.shimomoto.yakety.csv.api.ColumnDefinition;
 
-public enum MarvelUniverseColumns implements ColumnDefinition {
+public enum MarvelUniverseColumns implements IMarvelUniverseColumn {
 	TITLE("Title"),
 	RELEASE_DATE("Release date"),
 	PHASE("Phase"),

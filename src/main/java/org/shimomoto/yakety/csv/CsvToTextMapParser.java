@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.CsvParser;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -20,17 +21,17 @@ import java.util.stream.Stream;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
-class CsvToTextMapParser extends BaseCsvParser<Stream<Map<String, String>>> implements CsvParser<Stream<Map<String, String>>> {
+class CsvToTextMapParser<C> extends BaseCsvParser<Stream<Map<C, String>>> implements CsvParser<Stream<Map<C, String>>> {
 	@Getter(AccessLevel.PROTECTED)
-	private final List<String> columnNames;
+	private final List<C> columnNames;
 
-	protected CsvToTextMapParser(final Pattern lineBreakRegex, final Pattern fieldRegex, final char quote, final boolean trim, final List<String> columnNames) {
+	protected CsvToTextMapParser(final Pattern lineBreakRegex, final Pattern fieldRegex, final char quote, final boolean trim, final List<C> columnNames) {
 		super(lineBreakRegex, fieldRegex, quote, trim);
 		this.columnNames = columnNames;
 	}
 
-	public static CsvParser<Stream<Map<String, String>>> from(final FileFormatConfiguration config, final List<String> columnNames) {
-		return new CsvToTextMapParser(BaseCsvParser.getPattern(config.getParserLocale(), config.getLineBreak(), config.getQuote()),
+	public static <C> CsvParser<Stream<Map<C, String>>> from(final FileFormatConfiguration config, final List<C> columnNames) {
+		return new CsvToTextMapParser<>(BaseCsvParser.getPattern(config.getParserLocale(), config.getLineBreak(), config.getQuote()),
 						BaseCsvParser.getPattern(config.getParserLocale(), Character.toString(config.getSeparator()), config.getQuote()),
 						config.getQuote(),
 						config.isTrim(),
@@ -38,12 +39,12 @@ class CsvToTextMapParser extends BaseCsvParser<Stream<Map<String, String>>> impl
 	}
 
 	@Override
-	protected Stream<Map<String, String>> empty() {
+	protected Stream<Map<C, String>> empty() {
 		return Stream.empty();
 	}
 
 	@Override
-	protected Stream<Map<String, String>> parseLines(final @NotNull Scanner scanner) {
+	protected Stream<Map<C, String>> parseLines(final @NotNull Scanner scanner) {
 		return scanner.useDelimiter(super.getLineBreakRegex())
 						.tokens()
 						.skip(1) //skip header
@@ -51,14 +52,11 @@ class CsvToTextMapParser extends BaseCsvParser<Stream<Map<String, String>>> impl
 
 	}
 
-	private Map<String, String> getMapFromLine(final String line) {
-		try (final Scanner sc = new Scanner(line)) {
-			final Stream<String> fields = sc.useDelimiter(super.getFieldRegex())
-							.tokens()
-							.map(super::mayTrim)
-							.map(super::unquote);
-			return StreamUtils.zip(this.columnNames.stream(), fields, Pair::of)
-							.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
-		}
+	private Map<C, String> getMapFromLine(final String line) {
+		final Stream<String> fields = Arrays.stream(super.getFieldRegex().split(line, this.columnNames.size()))
+						.map(super::mayTrim)
+						.map(super::unquote);
+		return StreamUtils.zip(this.columnNames.stream(), fields, Pair::of)
+						.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 }

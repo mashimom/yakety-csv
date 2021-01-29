@@ -18,6 +18,7 @@ class RegexExperimentSpec extends Specification {
 						Samsung,,"49"" Dual QHD, QLED, HDR1000",6199.00
 						Samsung,,"Promotion! Special Price
 						49"" Dual QHD, QLED, HDR1000",4999.00
+						ASUS TUF,VG27AQ,"ASUS TUF VG27AQ - QHD IPS Gaming Monitor - 27 inch - 144-165hz",
 						'''.stripIndent()
 
 		when:
@@ -27,11 +28,27 @@ class RegexExperimentSpec extends Specification {
 
 
 		then:
-		result.size() == 5
+		result.size() == 6
 		result.first() == 'Make,Model,Description,Price'
-		result.last() == '''\
+		result[4] == '''\
 						Samsung,,"Promotion! Special Price
 						49"" Dual QHD, QLED, HDR1000",4999.00'''.stripIndent()
+	}
+
+	def "parses sample line"() {
+		given:
+		def content = '''ASUS TUF,VG27AQ,,"ASUS TUF VG27AQ - QHD IPS Gaming Monitor, 27 inch, 144-165hz",'''.stripIndent()
+
+		when:
+		def result = (~/,(?=([^"]*"[^"]*")*[^"]*$)/).split(content, 5).toList()
+
+		then:
+//		result.size() == 4
+		result[0] == 'ASUS TUF'
+		result[1] == 'VG27AQ'
+		result[2] == ''
+		result[3] == '"ASUS TUF VG27AQ - QHD IPS Gaming Monitor, 27 inch, 144-165hz"'
+		result[4] == ''
 	}
 
 	@Unroll

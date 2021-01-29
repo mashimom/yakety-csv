@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.CsvParser;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
-public class CsvToTextParser extends BaseCsvParser<Stream<List<String>>> implements CsvParser<Stream<List<String>>> {
+class CsvToTextParser extends BaseCsvParser<Stream<List<String>>> implements CsvParser<Stream<List<String>>> {
 	private CsvToTextParser(final Pattern lineBreakRegex, final Pattern fieldRegex, final char quote, final boolean trim) {
 		super(lineBreakRegex, fieldRegex, quote, trim);
 	}
@@ -43,12 +44,9 @@ public class CsvToTextParser extends BaseCsvParser<Stream<List<String>>> impleme
 
 	@NotNull
 	protected List<String> getFieldsFromLine(final String line) {
-		try (final Scanner sc = new Scanner(line)) {
-			return sc.useDelimiter(super.getFieldRegex())
-							.tokens()
-							.map(super::mayTrim)
-							.map(super::unquote)
-							.collect(Collectors.toList());
-		}
+		return Arrays.stream(super.getFieldRegex().split(line, -1))
+						.map(super::mayTrim)
+						.map(super::unquote)
+						.collect(Collectors.toList());
 	}
 }
