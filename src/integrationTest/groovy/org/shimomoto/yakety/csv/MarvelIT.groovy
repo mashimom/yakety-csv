@@ -56,4 +56,52 @@ class MarvelIT extends Specification {
 		result.size() == 64
 		result.collect { it[INDEX] }.toSet().size() == 64
 	}
+
+	def "Parse inputstream with textual defined columns"() {
+		given:
+		def cols = ['Title', 'Release date', 'Phase', 'Film/TV', 'In-universe year']
+		def config = FileFormatConfiguration.builder().trim(true).build()
+		and: 'a parser'
+		def parser = CsvParserFactory.toRowIndexedTextMap(config, '#', cols)
+		and: 'content as inputstream'
+		BufferedInputStream content = new BufferedInputStream(getClass().getResourceAsStream('mcu.csv'))
+
+		when:
+		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())
+
+		then: 'count rows as header is discarded'
+		result.size() == 64
+		and: 'all indexes must be distinct'
+		result.collect { it['#'] }.toSet().size() == 64
+		and: 'last record is ok'
+		result.last()['#'] == '64'
+		result.last()['Title'] == 'Untitled Hawkeye series'
+		result.last()['Release date'] == ''
+		result.last()['Phase'] == ''
+		result.last()['Film/TV'] == 'TV (Disney+)'
+		result.last()['In-universe year'] == ''
+	}
+
+	def "Parse inputstream without defining columns"() {
+		given:
+		def config = FileFormatConfiguration.builder().trim(true).build()
+		and: 'a parser'
+		def parser = CsvParserFactory.toText(config)
+		and: 'content as inputstream'
+		BufferedInputStream content = new BufferedInputStream(getClass().getResourceAsStream('mcu.csv'))
+
+		when:
+		List<List<String>> result = parser.parse(content).collect(Collectors.toList())
+
+		then: 'count of header and rows is correct'
+		result.size() == 65
+		and: 'header is the first "record"'
+		result.first() == ['Title', 'Release date', 'Phase', 'Film/TV', 'In-universe year']
+		and: 'last record is ok'
+		result.last()[0] == 'Untitled Hawkeye series'
+		result.last()[1] == ''
+		result.last()[2] == ''
+		result.last()[3] == 'TV (Disney+)'
+		result.last()[4] == ''
+	}
 }
