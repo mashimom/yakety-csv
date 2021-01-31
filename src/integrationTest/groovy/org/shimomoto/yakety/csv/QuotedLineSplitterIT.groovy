@@ -7,7 +7,7 @@ import spock.lang.Timeout
 
 class QuotedLineSplitterIT extends Specification {
 
-	@Timeout(3)
+	@Timeout(5)
 	def "Read 17Mb+ file without keeping entire file in memory"() {
 		given:
 		def url = new URL('https://raw.githubusercontent.com/samirarman/brazil-death-data/master/merged_data/by_city_monthly.csv')
@@ -18,7 +18,7 @@ class QuotedLineSplitterIT extends Specification {
 		lines.parse(url.newReader()).count() == 279492
 	}
 
-	@Timeout(10)
+	@Timeout(15)
 	def "Read 200Mb+ file without keeping entire file in memory"() {
 		given:
 		def getZippedResourceInputStream = { zfr ->
