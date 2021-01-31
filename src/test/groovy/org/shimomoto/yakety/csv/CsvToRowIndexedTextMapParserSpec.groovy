@@ -70,8 +70,9 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 		when:
 		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())
 
-		then:
-		result.size() == 6
+		then: 'result size is the content lines minus header and empty line at the end'
+		result.size() == (contentLines.size() - 2)
+		and: 'rows parsed'
 		result[0] == ['#': '1', 'Title': 'Iron Man', 'Release date': '2008-05-02', 'Phase': '1', 'Film/TV': 'Film', 'In-universe year': '2008']
 		result[1] == ['#': '2', 'Title': 'The Incredible Hulk', 'Release date': '2008-06-13', 'Phase': '1', 'Film/TV': 'Film', 'In-universe year': '2009']
 		result[2] == ['#': '3', 'Title': 'Iron Man 2', 'Release date': '2010-04-30', 'Phase': '1', 'Film/TV': 'Film', 'In-universe year': '2009']
@@ -97,8 +98,8 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 		when:
 		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())
 
-		then:
-		result.size() == 4
+		then: 'result size is the content lines minus header and empty line at the end'
+		result.size() == (contentLines.size() - 2)
 		and: 'line #0'
 		result[0]['ndx'] == '1'
 		result[0]['Make'] == 'Dell'
