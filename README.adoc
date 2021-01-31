@@ -12,6 +12,8 @@ endif::[]
 = yakety-csv
 
 The yakety-csv or _Yet-Another-Know-Everything-Tentative-Yap-CSV_ library.
+It should work with any character separator, so `,`, `;` and `tabs`; even custom separators.
+At this point it only works with single character line break: `\n`, `\r` or custom single character. Soon support for Windows `\r\n` will be added.
 
 IMPORTANT: There are plenty implementations out there, please look for them, this is an exercise.
 
@@ -95,16 +97,65 @@ org.gradle.parallel=true
 org.gradle.jvmargs=-Xmx2048M
 org.gradle.caching=true
 org.gradle.daemon.idletimeout=1800000
-org.gradle.java.home=/home/user/.sdkman/candidates/java/15.0.2-open # <1>
+org.gradle.java.home=/home/user/.sdkman/candidates/java/14.0.2-open # <1>
 -----------------------------------------------------------
 <1> your own path for the JDK 15
 
-== _TL;DR_
+=== _TL;DR_
 
 [source,shell]
 -----------------------------------------------------------
 ./gradlew
 -----------------------------------------------------------
+
+== How to use
+
+The concept usage is that you are either:
+- exploring data from a file you do not know the format or
+- parsing well known CSV format multiple times from different files.
+
+=== Simple CSV to Java `Stream<List<String>>`
+
+[source, java]
+-----------------------------------------------------------
+final FileFormatConfiguration config =
+    FileFormatConfiguration.builder().build()
+final CsvParser textParser =
+    org.shimomoto.yakety.csv.CsvParserFactory.toText(config)
+
+final Stream<List<Stream>> textResults =
+    textParser.parse(new FileInputSream(new File("that_data.csv")))
+-----------------------------------------------------------
+
+=== Simple CSV to `Stream<Map<String,String>>`
+
+With added field for the line index, starting at 1 (headers were zero). The field name must not clash with a column name.
+
+It is purely positional (does not check if first field matches first header column name), if you mess up the fields order, you mess up the mapping.
+
+[source, java]
+-----------------------------------------------------------
+final FileFormatConfiguration config =
+    FileFormatConfiguration.builder().build()
+final CsvParser indexedMapParser =
+    org.shimomoto.yakety.csv.CsvParserFactory.toRowIndexedTextMap(config, "#", List.of("colA","colB","colC"))
+
+final Stream<Map<String,String>> textResults =
+    indexedMapParser.parse(new FileInputSream(new File("that_data.csv")))
+
+-----------------------------------------------------------
+
+=== TL;DR
+
+Read the contents of link:src/integrationTest/groovy/org/shimomoto/yakety/csv/MarvelIT.groovy[MarvelIT.groovy] are creating and using multiple parsers.
+
+If you just want to read from the test results:
+[source, shell]
+-----------------------------------------------------------
+./gradlew integrationTest
+-----------------------------------------------------------
+
+then open link:build/reports/spock-reports/integrationTest/index.html[], these are the integration tests results
 
 == Learning notes
 
