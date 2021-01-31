@@ -13,7 +13,7 @@ class CsvToTextParserSpec extends Specification {
 	CsvToTextParser parser
 
 	@SuppressWarnings('GroovyAccessibility')
-	def "Create new parser from default configuration"() {
+	def "BASICS - Create new parser from default configuration"() {
 		given:
 		config = FileFormatConfiguration.builder().build()
 
@@ -21,18 +21,19 @@ class CsvToTextParserSpec extends Specification {
 		parser = CsvToTextParser.from(config)
 
 		then:
-		parser.lineBreakRegex.toString() == '\\n(?=([^"]*"[^"]*")*[^"]*$)'
 		parser.fieldRegex.toString() == ',(?=([^"]*"[^"]*")*[^"]*$)'
 		parser.quote == '"' as char
 		!parser.trim
+		parser.escapeQuoteRegex != null
+		parser.lineSplitter != null
 	}
 
 	@SuppressWarnings('GroovyAccessibility')
-	def "Create new parser from custom configuration"() {
+	def "BASICS - Create new parser from custom configuration"() {
 		given:
 		config = FileFormatConfiguration.builder()
 						.parserLocale(Locale.forLanguageTag('pt-BR'))
-						.lineBreak('\r\n')
+						.lineBreak('\n' as char)
 						.separator(';' as char)
 						.quote('|' as char)
 						.trim(true)
@@ -42,29 +43,34 @@ class CsvToTextParserSpec extends Specification {
 		parser = CsvToTextParser.from(config)
 
 		then:
-		parser.lineBreakRegex.toString() == '\\r\\n(?=([^|]*|[^|]*|)*[^|]*$)'
 		parser.fieldRegex.toString() == ';(?=([^|]*|[^|]*|)*[^|]*$)'
 		parser.quote == '|' as char
 		parser.trim
+		parser.escapeQuoteRegex != null
+		parser.lineSplitter != null
 	}
 
 	def "Parse a simple sample with defaults"() {
-		given:
+		given: 'content including empty line at the end'
+		def contentLines = [
+						'Title,                              Release date, Phase, Film/TV, In-universe year',
+						'Iron Man,                           2008-05-02,   1,     Film,    2008',
+						'The Incredible Hulk,                2008-06-13,   1,     Film,    2009',
+						'Iron Man 2,                         2010-04-30,   1,     Film,    2009',
+						'Thor,                               2011-04-27,   1,     Film,    2009',
+						'Captain America: The First Avenger, 2011-07-29,   1,     Film,    1942-1945',
+						'The Avengers,                       2012-04-26,   1,     Film,    2010',
+						''
+		]
+		def content = contentLines.join('\n')
+		and: 'a trimming parser'
 		parser = CsvToTextParser.from(FileFormatConfiguration.builder().trim(true).build())
-		def content = '''\
-								Title,                              Release date, Phase, Film/TV, In-universe year
-								Iron Man,                           2008-05-02,   1,     Film,    2008
-								The Incredible Hulk,                2008-06-13,   1,     Film,    2009
-								Iron Man 2,                         2010-04-30,   1,     Film,    2009
-								Thor,                               2011-04-27,   1,     Film,    2009
-								Captain America: The First Avenger, 2011-07-29,   1,     Film,    1942-1945
-								The Avengers,                       2012-04-26,   1,     Film,    2010
-								'''.stripIndent()
+
 		when:
 		def result = parser.parse(content).collect(Collectors.toList())
 
 		then:
-		result.size() == 7
+		result.size() == contentLines.size() - 1
 		result[0] == ['Title', 'Release date', 'Phase', 'Film/TV', 'In-universe year']
 		result[1] == ['Iron Man', '2008-05-02', '1', 'Film', '2008']
 		result[2] == ['The Incredible Hulk', '2008-06-13', '1', 'Film', '2009']

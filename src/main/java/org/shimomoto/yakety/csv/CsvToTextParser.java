@@ -7,10 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.CsvParser;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,27 +18,29 @@ import java.util.stream.Stream;
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
 class CsvToTextParser extends BaseCsvParser<Stream<List<String>>> implements CsvParser<Stream<List<String>>> {
-	private CsvToTextParser(final Pattern lineBreakRegex, final Pattern fieldRegex, final char quote, final boolean trim) {
-		super(lineBreakRegex, fieldRegex, quote, trim);
+	private CsvToTextParser(@NotNull final FileFormatConfiguration configuration) {
+		super(configuration);
 	}
 
-	public static CsvToTextParser from(final FileFormatConfiguration config) {
-		return new CsvToTextParser(
-						BaseCsvParser.getPattern(config.getParserLocale(), config.getLineBreak(), config.getQuote()),
-						BaseCsvParser.getPattern(config.getParserLocale(), Character.toString(config.getSeparator()), config.getQuote()),
-						config.getQuote(),
-						config.isTrim());
+	public static CsvToTextParser from(final @NotNull FileFormatConfiguration config) {
+		return new CsvToTextParser(config);
 	}
 
 	@Override
-	protected Stream<List<String>> empty() {
-		return Stream.empty();
+	public @NotNull Stream<List<String>> parse(final @NotNull String content) {
+		return getLineSplitter().parse(content)
+						.map(this::getFieldsFromLine);
 	}
 
 	@Override
-	protected Stream<List<String>> parseLines(final @NotNull Scanner scanner) {
-		return scanner.useDelimiter(super.getLineBreakRegex())
-						.tokens()
+	public @NotNull Stream<List<String>> parse(final @NotNull InputStream input) {
+		return getLineSplitter().parse(input)
+						.map(this::getFieldsFromLine);
+	}
+
+	@Override
+	public @NotNull Stream<List<String>> parse(final @NotNull File file) {
+		return getLineSplitter().parse(file)
 						.map(this::getFieldsFromLine);
 	}
 
