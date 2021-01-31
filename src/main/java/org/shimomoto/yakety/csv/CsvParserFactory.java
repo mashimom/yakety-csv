@@ -48,5 +48,6 @@ public class CsvParserFactory {
 		}
 
 		public static final FileFormatConfiguration excel = FileFormatConfiguration.builder().separator(';').build();
+		public static final FileFormatConfiguration tsv = FileFormatConfiguration.builder().separator('\t').build();
 	}
 }

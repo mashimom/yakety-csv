@@ -16,7 +16,7 @@ public class FileFormatConfiguration {
 	@Builder.Default
 	Locale parserLocale = Locale.US;
 	@Builder.Default
-	String lineBreak = "\n";
+	char lineBreak = '\n';
 	@Builder.Default
 	char separator = ',';
 	@Builder.Default

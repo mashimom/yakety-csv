@@ -7,13 +7,13 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.shimomoto.yakety.csv.api.CsvParser;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Locale;
-import java.util.Scanner;
 import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -21,18 +21,22 @@ import java.util.regex.Pattern;
 @Getter(AccessLevel.PROTECTED)
 @Slf4j
 abstract class BaseCsvParser<S> implements CsvParser<S> {
-	Pattern lineBreakRegex;
 	Pattern fieldRegex;
+	@Deprecated
 	char quote; //TODO: move to column by column option
+	@Deprecated
 	boolean trim; //TODO: move to column by column option
 	Pattern escapeQuoteRegex;
+	QuotedLineSplitter lineSplitter;
 
-	protected BaseCsvParser(final Pattern lineBreakRegex, final Pattern fieldRegex, final char quote, final boolean trim) {
-		this.lineBreakRegex = lineBreakRegex;
-		this.fieldRegex = fieldRegex;
-		this.quote = quote;
-		this.trim = trim;
+	protected BaseCsvParser(@NotNull final FileFormatConfiguration configuration) {
+		this.quote = configuration.getQuote();
+		this.trim = configuration.isTrim();
+		this.fieldRegex = getPattern(configuration.getParserLocale(),
+						Character.toString(configuration.getSeparator()),
+						configuration.getQuote());
 		this.escapeQuoteRegex = Pattern.compile(String.format("%c{2}", quote));
+		this.lineSplitter = new QuotedLineSplitter(configuration.getLineBreak(), configuration.getQuote());
 	}
 
 	protected static Pattern getPattern(final Locale parserLocale, final String separator, final char quote) {
@@ -45,28 +49,15 @@ abstract class BaseCsvParser<S> implements CsvParser<S> {
 						quote, quote, quote, quote, quote));
 	}
 
-	public S parse(final String content) {
-		return parseLines(new Scanner(content));
-	}
+	public abstract @NotNull S parse(@NotNull final String content);
 
-	public S parse(final File file) {
-		try {
-			return parseLines(new Scanner(file));
-		} catch (final FileNotFoundException e) {
-			log.error("Unable to read file: {}", file);
-		}
-		return empty();
-	}
+	public abstract @NotNull S parse(@NotNull final InputStream input);
 
-	protected abstract S empty();
+	public abstract @NotNull S parse(@NotNull final File file);
 
-	public S parse(final InputStream input) {
-		return parseLines(new Scanner(input));
-	}
-
-	protected abstract S parseLines(final Scanner scanner);
-
-	protected String unquote(final String field) {
+	@Nullable
+	@Deprecated
+	protected String unquote(@Nullable final String field) {
 		if (field == null) {
 			return null;
 		}
@@ -74,7 +65,9 @@ abstract class BaseCsvParser<S> implements CsvParser<S> {
 						.replaceAll(Character.toString(quote));
 	}
 
-	protected String mayTrim(final String field) {
-		return trim ? field.trim() : field;
+	@Nullable
+	@Deprecated
+	protected String mayTrim(@Nullable final String field) {
+		return trim ? StringUtils.trim(field) : field;
 	}
 }

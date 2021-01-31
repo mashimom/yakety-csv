@@ -10,11 +10,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.CsvParser;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.regex.Pattern;
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,33 +21,47 @@ import java.util.stream.Stream;
 @Slf4j
 class CsvToTextMapParser<C> extends BaseCsvParser<Stream<Map<C, String>>> implements CsvParser<Stream<Map<C, String>>> {
 	@Getter(AccessLevel.PROTECTED)
-	private final List<C> columnNames;
+	private final List<@NotNull C> columnNames;
 
-	protected CsvToTextMapParser(final Pattern lineBreakRegex, final Pattern fieldRegex, final char quote, final boolean trim, final List<C> columnNames) {
-		super(lineBreakRegex, fieldRegex, quote, trim);
+	public CsvToTextMapParser(@NotNull final FileFormatConfiguration config,
+	                          @NotNull final List<@NotNull C> columnNames) {
+		super(config);
 		this.columnNames = columnNames;
 	}
 
-	public static <C> CsvParser<Stream<Map<C, String>>> from(final FileFormatConfiguration config, final List<C> columnNames) {
-		return new CsvToTextMapParser<>(BaseCsvParser.getPattern(config.getParserLocale(), config.getLineBreak(), config.getQuote()),
-						BaseCsvParser.getPattern(config.getParserLocale(), Character.toString(config.getSeparator()), config.getQuote()),
-						config.getQuote(),
-						config.isTrim(),
-						columnNames);
+	public static <C> CsvParser<Stream<Map<C, String>>> from(@NotNull final FileFormatConfiguration config,
+	                                                         @NotNull final List<@NotNull C> columnNames) {
+		//noinspection ConstantConditions
+		final Set<@NotNull C> columnSet =
+						columnNames.stream()
+										.filter(Objects::nonNull)
+										.collect(Collectors.toCollection(HashSet::new));
+
+		if (columnSet.size() != columnNames.size()) {
+			throw new IllegalArgumentException("Column names must be unique and non-null");
+		}
+		return new CsvToTextMapParser<>(config, columnNames);
 	}
 
 	@Override
-	protected Stream<Map<C, String>> empty() {
-		return Stream.empty();
-	}
-
-	@Override
-	protected Stream<Map<C, String>> parseLines(final @NotNull Scanner scanner) {
-		return scanner.useDelimiter(super.getLineBreakRegex())
-						.tokens()
-						.skip(1) //skip header
+	public @NotNull Stream<Map<C, String>> parse(final @NotNull String content) {
+		return getLineSplitter().parse(content)
+						.skip(1)
 						.map(this::getMapFromLine);
+	}
 
+	@Override
+	public @NotNull Stream<Map<C, String>> parse(final @NotNull InputStream input) {
+		return getLineSplitter().parse(input)
+						.skip(1)
+						.map(this::getMapFromLine);
+	}
+
+	@Override
+	public @NotNull Stream<Map<C, String>> parse(final @NotNull File file) {
+		return getLineSplitter().parse(file)
+						.skip(1)
+						.map(this::getMapFromLine);
 	}
 
 	private Map<C, String> getMapFromLine(final String line) {

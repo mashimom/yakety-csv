@@ -1,5 +1,6 @@
 package org.shimomoto.yakety.csv
 
+
 import java.util.stream.Collectors
 
 import spock.lang.Specification
@@ -7,7 +8,7 @@ import spock.lang.Specification
 class CsvToTextMapParserSpec extends Specification {
 
 	@SuppressWarnings('GroovyAccessibility')
-	def "Create new parser from default configuration"() {
+	def "BASICS - Create new parser from default configuration"() {
 		given:
 		def config = FileFormatConfiguration.builder().build()
 		def cols = ['lala', 'lele', 'lili', 'lolo']
@@ -16,7 +17,6 @@ class CsvToTextMapParserSpec extends Specification {
 		def parser = CsvToTextMapParser.from(config, cols)
 
 		then:
-		parser.lineBreakRegex.toString() == '\\n(?=([^"]*"[^"]*")*[^"]*$)'
 		parser.fieldRegex.toString() == ',(?=([^"]*"[^"]*")*[^"]*$)'
 		parser.quote == '"' as char
 		!parser.trim
@@ -28,7 +28,7 @@ class CsvToTextMapParserSpec extends Specification {
 		given:
 		def config = FileFormatConfiguration.builder()
 						.parserLocale(Locale.forLanguageTag('pt-BR'))
-						.lineBreak('\r\n')
+						.lineBreak('\n' as char)
 						.separator(';' as char)
 						.quote('|' as char)
 						.trim(true)
@@ -39,10 +39,11 @@ class CsvToTextMapParserSpec extends Specification {
 		def parser = CsvToTextMapParser.from(config, cols)
 
 		then:
-		parser.lineBreakRegex.toString() == '\\r\\n(?=([^|]*|[^|]*|)*[^|]*$)'
 		parser.fieldRegex.toString() == ';(?=([^|]*|[^|]*|)*[^|]*$)'
 		parser.quote == '|' as char
 		parser.trim
+		parser.escapeQuoteRegex != null
+		parser.lineSplitter != null
 		parser.columnNames == cols
 	}
 
@@ -50,15 +51,18 @@ class CsvToTextMapParserSpec extends Specification {
 		given:
 		def cols = ['Title', 'Release date', 'Phase', 'Film/TV', 'In-universe year']
 		def parser = CsvToTextMapParser.from(FileFormatConfiguration.builder().trim(true).build(), cols)
-		def content = '''\
-								Title,                              Release date, Phase, Film/TV, In-universe year
-								Iron Man,                           2008-05-02,   1,     Film,    2008
-								The Incredible Hulk,                2008-06-13,   1,     Film,    2009
-								Iron Man 2,                         2010-04-30,   1,     Film,    2009
-								Thor,                               2011-04-27,   1,     Film,    2009
-								Captain America: The First Avenger, 2011-07-29,   1,     Film,    1942-1945
-								The Avengers,                       2012-04-26,   1,     Film,    2010
-								'''.stripIndent()
+		def contentLines = [
+						'Title,                              Release date, Phase, Film/TV, In-universe year',
+						'Iron Man,                           2008-05-02,   1,     Film,    2008',
+						'The Incredible Hulk,                2008-06-13,   1,     Film,    2009',
+						'Iron Man 2,                         2010-04-30,   1,     Film,    2009',
+						'Thor,                               2011-04-27,   1,     Film,    2009',
+						'Captain America: The First Avenger, 2011-07-29,   1,     Film,    1942-1945',
+						'The Avengers,                       2012-04-26,   1,     Film,    2010',
+						''
+		]
+		def content = contentLines.join('\n')
+
 		when:
 		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())
 
@@ -76,14 +80,16 @@ class CsvToTextMapParserSpec extends Specification {
 		given:
 		def cols = ['Make', 'Model', 'Description', 'Price']
 		def parser = CsvToTextMapParser.from(FileFormatConfiguration.builder().build(), cols)
-		def content = '''\
-						Make,Model,Description,Price
-						Dell,P3421W,"Dell 34, Curved, USB-C Monitor",2499.00
-						Dell,"","Alienware 38 Curved ""Gaming Monitor""",  6699.00
-						Samsung,,"49"" Dual QHD, QLED, HDR1000",6199.00
-						Samsung,,"  Promotion! Special Price
-						49"" Dual QHD, QLED, HDR1000  ",4999.00
-						'''.stripIndent()
+		def contentLines = [
+						'Make,Model,Description,Price',
+						'Dell,P3421W,"Dell 34, Curved, USB-C Monitor",2499.00',
+						'Dell,"","Alienware 38 Curved ""Gaming Monitor""",  6699.00',
+						'Samsung,,"49"" Dual QHD, QLED, HDR1000",6199.00',
+						'Samsung,,"  Promotion! Special Price',
+						'49"" Dual QHD, QLED, HDR1000  ",4999.00',
+						''
+		]
+		def content = contentLines.join('\n')
 
 		when:
 		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())
