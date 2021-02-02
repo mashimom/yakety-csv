@@ -163,6 +163,7 @@ then open link:build/reports/spock-reports/integrationTest/index.html[], these a
 `String.split(/pattern/, -1)` works correctly (empty fields show up) but takes a `String` instead of `Pattern`; the `Pattern.split(/string/, -1)` works when the number of fields is unknown; when the number of fields is known just pass the number instead of a negative.
 . [.line-through]#Regular expressions with matches and groups take more processing power, the lookahead doesn't and works as would the index based string walk.# +
 The regular expression break by line blows up the stack; the solution I can think of is to consume lines, then check if there is an open quote, consume another line until all open quotes are closed, then it would be better to just already consume fields while at that.
+. Java Pattern class cannot be used on hash or equals 🤷.
 
 == Questions
 
