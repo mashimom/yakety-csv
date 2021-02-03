@@ -1,14 +1,120 @@
 package org.shimomoto.yakety.csv
 
+import java.time.LocalDate
 import java.util.stream.Collectors
 
-import static configuration.marvel.MarvelUniverseColumns.*
-import static configuration.marvel.MarvelUniverseIndexColumn.INDEX
+import static configuration.marvel.csv.MarvelUniverseColumns.*
+import static configuration.marvel.csv.MarvelUniverseIndexColumn.INDEX
 import configuration.marvel.api.IMarvelUniverseColumn
+import configuration.marvel.csv.MarvelUniverseBeanAssembly
+import configuration.marvel.csv.MarvelUniverseMedia
+import configuration.marvel.domain.MCUPhases
+import configuration.marvel.domain.MediaVehicle
+import org.apache.commons.lang3.Range
 import spock.lang.Specification
 
 class MarvelIT extends Specification {
 
+	MarvelUniverseMedia ironMan = MarvelUniverseMedia.builder()
+					.id(1L)
+					.title('Iron Man')
+					.releaseDate(LocalDate.of(2008, 5, 2))
+					.phase(MCUPhases.PHASE_1)
+					.filmTv(MediaVehicle.FILM)
+					.inUniverseYear(Range.is(2008))
+					.build()
+	MarvelUniverseMedia hulk = MarvelUniverseMedia.builder()
+					.id(2L)
+					.title('The Incredible Hulk')
+					.releaseDate(LocalDate.of(2008, 6, 13))
+					.phase(MCUPhases.PHASE_1)
+					.filmTv(MediaVehicle.FILM)
+					.inUniverseYear(Range.is(2009))
+					.build()
+	MarvelUniverseMedia ironMan2 = MarvelUniverseMedia.builder()
+					.id(3L)
+					.title('Iron Man 2')
+					.releaseDate(LocalDate.of(2010, 4, 30))
+					.phase(MCUPhases.PHASE_1)
+					.filmTv(MediaVehicle.FILM)
+					.inUniverseYear(Range.is(2009))
+					.build()
+	MarvelUniverseMedia thor = MarvelUniverseMedia.builder()
+					.id(4L)
+					.title('Thor')
+					.releaseDate(LocalDate.of(2011, 4, 27))
+					.phase(MCUPhases.PHASE_1)
+					.filmTv(MediaVehicle.FILM)
+					.inUniverseYear(Range.is(2009))
+					.build()
+	MarvelUniverseMedia capitainAmerica = MarvelUniverseMedia.builder()
+					.id(5L)
+					.title('Captain America: The First Avenger')
+					.releaseDate(LocalDate.of(2011, 7, 29))
+					.phase(MCUPhases.PHASE_1)
+					.filmTv(MediaVehicle.FILM)
+					.inUniverseYear(Range.between(1942, 1945))
+					.build()
+	MarvelUniverseMedia avengers = MarvelUniverseMedia.builder()
+					.id(6L)
+					.title('The Avengers')
+					.releaseDate(LocalDate.of(2012, 04, 26))
+					.phase(MCUPhases.PHASE_1)
+					.filmTv(MediaVehicle.FILM)
+					.inUniverseYear(Range.is(2010))
+					.build()
+
+	List<String> contentLines = [
+					'Title,                              Release date, Phase, Film/TV, In-universe year',
+					'Iron Man,                           2008-05-02,   1,     Film,    2008',
+					'The Incredible Hulk,                2008-06-13,   1,     Film,    2009',
+					'Iron Man 2,                         2010-04-30,   1,     Film,    2009',
+					'Thor,                               2011-04-27,   1,     Film,    2009',
+					'Captain America: The First Avenger, 2011-07-29,   1,     Film,    1942-1945',
+					'The Avengers,                       2012-04-26,   1,     Film,    2010'
+	]
+
+	String content = contentLines.join('\n')
+
+	def "Parser to beans works on small set of lines"() {
+		given:
+		def config = ExtendedFileFormatConfiguration.builder()
+						.trim(true)
+						.indexColumn(INDEX)
+						.columns(values().toList())
+						.build()
+		def assembly = new MarvelUniverseBeanAssembly(config.parserLocale)
+		and: 'a parser'
+		def parser = CsvParserFactory.toBeans(config, assembly)
+
+		when:
+		def result = parser.parse(content).collect(Collectors.toList())
+
+		then:
+		result[0] == ironMan
+		result[1] == hulk
+		result[2] == ironMan2
+		result[3] == thor
+		result[4] == capitainAmerica
+		result[5] == avengers
+	}
+
+	def "Parser to beans works without exceptions to full number of lines, even when data is malformed for the type"() {
+		given:
+		def config = ExtendedFileFormatConfiguration.builder()
+						.trim(true)
+						.indexColumn(INDEX)
+						.columns(values().toList())
+						.build()
+		def assembly = new MarvelUniverseBeanAssembly(config.parserLocale)
+		and: 'a parser'
+		def parser = CsvParserFactory.toBeans(config, assembly)
+		and: 'data'
+		def bis = new BufferedInputStream(getClass().getResourceAsStream('mcu.csv'))
+
+		expect:
+		parser.parse(bis).collect(Collectors.toList()).size() == 64
+	}
 	def "Parse a small sample using code defined columns"() {
 		given:
 		IMarvelUniverseColumn index = INDEX
@@ -16,16 +122,7 @@ class MarvelIT extends Specification {
 		def config = FileFormatConfiguration.builder().trim(true).build()
 		and: 'a parser'
 		def parser = CsvParserFactory.toRowIndexedTextMap(config, index, cols.toList())
-		and: 'the simple tiny content'
-		def content = '''\
-								Title,                              Release date, Phase, Film/TV, In-universe year
-								Iron Man,                           2008-05-02,   1,     Film,    2008
-								The Incredible Hulk,                2008-06-13,   1,     Film,    2009
-								Iron Man 2,                         2010-04-30,   1,     Film,    2009
-								Thor,                               2011-04-27,   1,     Film,    2009
-								Captain America: The First Avenger, 2011-07-29,   1,     Film,    1942-1945
-								The Avengers,                       2012-04-26,   1,     Film,    2010
-								'''.stripIndent()
+
 		when:
 		List<Map<IMarvelUniverseColumn, String>> result = parser.parse(content).collect(Collectors.toList())
 
