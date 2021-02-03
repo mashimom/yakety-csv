@@ -49,6 +49,64 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 		parser.columnNames == ['index', *cols]
 	}
 
+	def "BASICS - equals and hashcode as expected"() {
+		given:
+		def cols = ['lala', 'lele', 'lili', 'lolo']
+		def parser = CsvToRowIndexedTextMapParser.from(c, 'index', cols)
+		def same = CsvToRowIndexedTextMapParser.from(c, 'index', cols)
+		def other = CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().trim(false).build(), 'index', cols)
+
+		expect: 'parsers from same config have same hash code'
+		parser.hashCode() == same.hashCode()
+		and: 'parsers from different config have different hash code'
+		parser.hashCode() != other.hashCode()
+		same.hashCode() != other.hashCode()
+
+		and: 'parsers from same config are equal'
+		parser == same
+		and: 'parsers from different config are not equal'
+		parser != other
+		same != other
+
+		where:
+		c << [FileFormatConfiguration.builder().trim(true).build(),
+		      FileFormatConfiguration.builder()
+						      .parserLocale(Locale.forLanguageTag('pt-BR'))
+						      .lineBreak('\n' as char)
+						      .separator(';' as char)
+						      .quote('|' as char)
+						      .trim(true)
+						      .build()]
+	}
+
+	def "BASICS - Repeated columns will fail"() {
+		when:
+		CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), 'index', ['lala', 'lala', 'lili'])
+
+		then:
+		thrown IllegalArgumentException
+
+		when:
+		CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), 'index', ['index', 'lala', 'lili'])
+
+		then:
+		thrown IllegalArgumentException
+	}
+
+	def "BASICS - null columns will fail"() {
+		when:
+		CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), 'index', ['lala', null, 'lili'])
+
+		then:
+		thrown IllegalArgumentException
+
+		when:
+		CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), null, ['lala', 'lele', 'lili'])
+
+		then:
+		thrown IllegalArgumentException
+	}
+
 	def "Parse a simple sample with defaults"() {
 		given: 'expected column names'
 		def cols = ['Title', 'Release date', 'Phase', 'Film/TV', 'In-universe year']

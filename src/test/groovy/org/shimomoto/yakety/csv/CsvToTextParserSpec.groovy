@@ -1,6 +1,6 @@
 package org.shimomoto.yakety.csv
 
-
+import java.nio.charset.StandardCharsets
 import java.util.stream.Collectors
 
 import spock.lang.Specification
@@ -50,6 +50,35 @@ class CsvToTextParserSpec extends Specification {
 		parser.lineSplitter != null
 	}
 
+	def "BASICS - equals and hashcode as expected"() {
+		given:
+		parser = CsvToTextParser.from(c)
+		def same = CsvToTextParser.from(c)
+		def other = CsvToTextParser.from(FileFormatConfiguration.builder().trim(false).build())
+
+		expect: 'parsers from same config have same hash code'
+		parser.hashCode() == same.hashCode()
+		and: 'parsers from different config have different hash code'
+		parser.hashCode() != other.hashCode()
+		same.hashCode() != other.hashCode()
+
+		and: 'parsers from same config are equal'
+		parser == same
+		and: 'parsers from different config are not equal'
+		parser != other
+		same != other
+
+		where:
+		c << [FileFormatConfiguration.builder().trim(true).build(),
+		      FileFormatConfiguration.builder()
+						      .parserLocale(Locale.forLanguageTag('pt-BR'))
+						      .lineBreak('\n' as char)
+						      .separator(';' as char)
+						      .quote('|' as char)
+						      .trim(true)
+						      .build()]
+	}
+
 	def "Parse a simple sample with defaults"() {
 		given: 'content including empty line at the end'
 		def contentLines = [
@@ -78,6 +107,14 @@ class CsvToTextParserSpec extends Specification {
 		result[4] == ['Thor', '2011-04-27', '1', 'Film', '2009']
 		result[5] == ['Captain America: The First Avenger', '2011-07-29', '1', 'Film', '1942-1945']
 		result[6] == ['The Avengers', '2012-04-26', '1', 'Film', '2010']
+
+		when: 'parsing same content as inputStream'
+		def isResult = parser.parse(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)))
+						.collect(Collectors.toList())
+
+		then: 'results are identical'
+		isResult == result
+
 	}
 
 	def "Parse a complex sample"() {
