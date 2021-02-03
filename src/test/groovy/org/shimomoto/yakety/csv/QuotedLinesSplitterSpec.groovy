@@ -5,7 +5,22 @@ import java.util.stream.Collectors
 import spock.lang.Specification
 import spock.lang.Subject
 
-class QuotedLineSplitterSpec extends Specification {
+class QuotedLinesSplitterSpec extends Specification {
+
+	def "BASICS"() {
+		given:
+		def splitter = new QuotedLinesSplitter('\n' as char, '"' as char)
+		def same = new QuotedLinesSplitter('\n' as char, '"' as char)
+		def other = new QuotedLinesSplitter('|' as char, ',' as char)
+
+		expect:
+		splitter == same
+		splitter.hashCode() == same.hashCode()
+		splitter != other
+		splitter.hashCode() != other.hashCode()
+		splitter != null
+		splitter != new Object()
+	}
 
 	def "Read small content with empty line at the end"() {
 		given: 'content of 6 lines (including header) plus empty line at the end'
@@ -20,7 +35,7 @@ class QuotedLineSplitterSpec extends Specification {
 		def content = contentLines.join('\n')
 		and: 'the splitter configured with new line and double quotes'
 		@Subject
-		def lineSplitter = new QuotedLineSplitter('\n' as char, '"' as char)
+		def lineSplitter = new QuotedLinesSplitter('\n' as char, '"' as char)
 
 		when:
 		def result = lineSplitter.parse(content).collect(Collectors.toList())
@@ -48,7 +63,7 @@ class QuotedLineSplitterSpec extends Specification {
 		def content = contentLines.join('\n')
 		and: 'the splitter configured with new line and double quotes'
 		@Subject
-		def lineSplitter = new QuotedLineSplitter('\n' as char, '"' as char)
+		def lineSplitter = new QuotedLinesSplitter('\n' as char, '"' as char)
 
 		when:
 		def result = lineSplitter.parse(content).collect(Collectors.toList())
