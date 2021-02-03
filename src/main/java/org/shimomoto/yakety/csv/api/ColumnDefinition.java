@@ -1,16 +1,10 @@
 package org.shimomoto.yakety.csv.api;
 
-public interface ColumnDefinition {
+public interface ColumnDefinition extends HasDisplayName{
 
 	int getOrder();
 
-	String getName();
+	String getDisplayName();
 
-	default boolean mustTrim() {
-		return false;
-	}
-
-	default boolean quoted() {
-		return false;
-	}
+	boolean isNullable();
 }
