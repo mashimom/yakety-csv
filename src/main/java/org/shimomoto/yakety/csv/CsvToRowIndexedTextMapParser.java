@@ -12,10 +12,7 @@ import org.shimomoto.yakety.csv.api.CsvParser;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +33,7 @@ class CsvToRowIndexedTextMapParser<C> extends CsvToTextMapParser<C> implements C
 	                                                         @NotNull final List<C> columnNames) {
 		final HashSet<C> columnsSet = Stream.concat(Stream.of(indexColName),
 						columnNames.stream())
+						.filter(Objects::nonNull)
 						.collect(Collectors.toCollection(HashSet::new));
 		if (columnsSet.size() != (columnNames.size() + 1)) {
 			throw new IllegalArgumentException("Column names must be unique and non-null");
