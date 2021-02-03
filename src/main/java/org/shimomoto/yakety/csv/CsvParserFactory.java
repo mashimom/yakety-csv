@@ -3,6 +3,8 @@ package org.shimomoto.yakety.csv;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.shimomoto.yakety.csv.api.BeanAssembly;
+import org.shimomoto.yakety.csv.api.ColumnDefinition;
 import org.shimomoto.yakety.csv.api.CsvParser;
 
 import java.util.*;
@@ -42,12 +44,37 @@ public class CsvParserFactory {
 						.orElseGet(() -> CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), indexColName, columnNames));
 	}
 
-	@SuppressWarnings("unused")
-	public static final class Standard {
-		private Standard() {
+	public static <C extends ColumnDefinition, T> CsvParser<Stream<T>> toBeans(
+					@NotNull final ExtendedFileFormatConfiguration<C> config,
+					@NotNull final BeanAssembly<C, T> beanAssembly) {
+
+		final Set<C> columnsAsSet = Stream.concat(Stream.of(config.getIndexColumn()), config.getColumns().stream())
+						.collect(Collectors.toSet());
+		if (columnsAsSet.size() != config.getColumns().size() + 1) {
+			throw new IllegalArgumentException("At least one of the columns are duplicated, which is not allowed");
 		}
 
+		final FileFormatConfiguration simpleconfig = FileFormatConfiguration.builder()
+						.parserLocale(config.getParserLocale())
+						.lineBreak(config.getLineBreak())
+						.separator(config.getSeparator())
+						.quote(config.getQuote())
+						.trim(config.isTrim())
+						.build();
+		return CsvToBeanParser.from(
+						simpleconfig,
+						config.getIndexColumn(),
+						config.getColumns(),
+						beanAssembly);
+	}
+
+
+	@SuppressWarnings("unused")
+	public static final class StandardFiles {
 		public static final FileFormatConfiguration excel = FileFormatConfiguration.builder().separator(';').build();
 		public static final FileFormatConfiguration tsv = FileFormatConfiguration.builder().separator('\t').build();
+
+		private StandardFiles() {
+		}
 	}
 }
