@@ -32,15 +32,14 @@ toc::[]
 ** _Step 1_ list of ordered string values
 ** _Step 2_ list of string values by key
 ** _Step 3_ nullable values
-
-=== Bucket list
-
-* on parsing:
 ** _Step 4_ basic type coercion from string
 ** _Step 5_ Boxed variation on basic types
 ** _Step 6_ Support for date, time, datetime (timezone or not)
-** _Step 7_ assembled value object __(maybe?)__
-* Caching of parsing results (denormalized files tend to repeat a lot).
+** _Step 7_ assembled value object
+
+=== Bucket list
+
+* Caching of parsed results (denormalized files tend to repeat a lot).
 * Support for custom separators, line breaks and quotes __(maybe?)__
 * in case there is a coercion error, return a marker that point to file, line, field where problem happened.
 
@@ -58,14 +57,14 @@ toc::[]
 * [.line-through]#`v1.5.X` - proper parsing of Date, Time and DateTime#
 * [.line-through]#`v1.6.X` - proper parsing of BigInteger and BigDecimal#
 * [.line-through]#`v1.7.X` - support to domain values (enum) parsing#
-* `v2.0.0` - Bean assembly from text by column map, includes:
+* `v2.0.0` - Bean assembly from the text by column map, includes:
     - safe parsing of standards types: int, long, float, double, BigInteger, BigDecimal, LocalDate, LocalDateTime, LocalTime.
-    - parsing of domain based values backed by enums;
+    - parsing of domain-based values backed by enums;
     - API for custom field parsing;
-    - API that joins field parser and map key lookup;
+    - API that joins field parser and map's key lookup;
     - any field that fails to be parsed is null;
-    - all API avoids exceptions so stream is never broken;
-    - API for a transformer from Map<K,String> to java bean.
+    - all API avoids exceptions so the stream is never broken;
+    - API for a transformer from Map<K, String> to java bean.
     - API for indexed/id'ed beans
 * `v2.0.1` - refactoring and test coverage improvements
 * `v2.1.0` - joining 2 existing configurations, builder decides if it has column references or not, it is transparent for the API user.
