@@ -50,17 +50,37 @@ toc::[]
 * `v0.1.X` - stream String value of fields from a csv using strict RFC4180
 * `v0.2.X` - Enable column configuration
 * `v0.3.X`?- Proper handle of quotes
-* `v1.0.X` - stream Map.Entry of String values by column (RFC4180)
-* `v1.1.X` - nullable columns (map stream cannot take null values)
-* `v1.2.X` - proper limited parsing of int and double
-* `v1.3.X` - proper parsing of long and float
-* `v1.4.X` - proper parsing to Boxed numbers
-* `v1.5.X` - proper parsing of Date, Time and DateTime
-* `v1.6.X` - proper parsing of BigInteger and BigDecimal
-* `v1.7.X` - support to domain values (enum) parsing
-* `v2.0.0` - custom file formats
-* `v2.1.0` - custom parsers
-* `v3.0.0` - marker pointing to location where parsing failed instead of error
+* [.line-through]#`v1.0.X` - stream Map.Entry of String values by column (RFC4180)#
+* [.line-through]#`v1.1.X` - nullable columns (map stream cannot take null values)#
+* [.line-through]#`v1.2.X` - proper limited parsing of int and double#
+* [.line-through]#`v1.3.X` - proper parsing of long and float#
+* [.line-through]#`v1.4.X` - proper parsing to Boxed numbers#
+* [.line-through]#`v1.5.X` - proper parsing of Date, Time and DateTime#
+* [.line-through]#`v1.6.X` - proper parsing of BigInteger and BigDecimal#
+* [.line-through]#`v1.7.X` - support to domain values (enum) parsing#
+* `v2.0.0` - Bean assembly from text by column map, includes:
+    - safe parsing of standards types: int, long, float, double, BigInteger, BigDecimal, LocalDate, LocalDateTime, LocalTime.
+    - parsing of domain based values backed by enums;
+    - API for custom field parsing;
+    - API that joins field parser and map key lookup;
+    - any field that fails to be parsed is null;
+    - all API avoids exceptions so stream is never broken;
+    - API for a transformer from Map<K,String> to java bean.
+    - API for indexed/id'ed beans
+* `v2.0.1` - refactoring and test coverage improvements
+* `v2.1.0` - joining 2 existing configurations, builder decides if it has column references or not, it is transparent for the API user.
+* `v3.0.0` - Adding feature to identify parsing problems, includes:
+    - Removal of all deprecated API;
+    - implementation of Either;
+    - a new parser and bean assembly that uses Either as output;
+    - a new interface to represent a problem parsing a field, which can be applied along with ColumnDefinition;
+    - introduction of result expectation vs actual result;
+    - marker pointing to location where parsing failed.
+* `v4.0.0` - first API stable version, includes:
+    - optimizations
+    - extra logging
+    - integration test comments and documentation
+    - package publication
 
 == Tasks
 
@@ -77,9 +97,9 @@ toc::[]
 - [x] configurable csv columns to stream of String fieldByColumnName maps
 - [x] indexed row value as field in map
 - [x] use dynamic programming to check if line break is within quotes, ignore it if it is. should consume large files without blowing up the stack.
-- [ ] parser localization
-- [ ] column definition map to expected type (string for now)
-- [ ] from the map result apply identity type coercion to bean
+- [x] parser localization
+- [x] column definition map to expected type (string for now)
+- [x] from the map result apply identity type coercion to bean
 - [ ] add coercion checks with bad results as separate dataset from raw values
 - [ ] add null constraints
 - [ ] configurable csv columns with type coercion (all types)
@@ -142,6 +162,29 @@ final CsvParser indexedMapParser =
 
 final Stream<Map<String,String>> textResults =
     indexedMapParser.parse(new FileInputSream(new File("that_data.csv")))
+
+-----------------------------------------------------------
+
+=== Simple CSV to `Stream<?>`
+
+It builds upon the fields by column map with a dynamic index, those results are used to build a Java Bean.
+
+A transformer from `Stream<Map<? extends ColumnDefinition,String>>` to whatever aggregate is to be used is needed.
+
+[source, java]
+-----------------------------------------------------------
+final ExtendedFileFormatConfiguration config =
+    ExtendedFileFormatConfiguration.builder()
+        .indexColumn(MyVirtualColumns.INDX)
+        .columns(MyColumns.INDX)
+        .build()
+final BeanAssembly<MyColumns, MyAggregate> transformer =
+    new MyTransformer(Locale.EN)
+final CsvParser beanParser =
+    org.shimomoto.yakety.csv.CsvParserFactory.toBeans(config)
+
+final Stream<MyAggregate> aggregates =
+    beanParser.parse(new FileInputSream(new File("that_data.csv")))
 
 -----------------------------------------------------------
 
