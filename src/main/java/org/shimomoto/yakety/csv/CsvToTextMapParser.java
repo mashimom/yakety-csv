@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.CsvParser;
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
 
 import java.io.File;
 import java.io.InputStream;

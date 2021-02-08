@@ -10,6 +10,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.shimomoto.yakety.csv.api.CsvParser;
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
 
 import java.util.Locale;
 import java.util.regex.Pattern;

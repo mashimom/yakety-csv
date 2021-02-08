@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.BeanAssembly;
 import org.shimomoto.yakety.csv.api.ColumnDefinition;
 import org.shimomoto.yakety.csv.api.CsvParser;
+import org.shimomoto.yakety.csv.config.ExtendedFileFormatConfiguration;
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
 
 import java.io.File;
 import java.io.InputStream;
@@ -25,8 +27,13 @@ class CsvToBeanParser<C extends ColumnDefinition, T> implements CsvParser<Stream
 	CsvParser<Stream<Map<C, String>>> delegate;
 	BeanAssembly<C, T> beanAssembly;
 
-	public CsvToBeanParser(@NotNull final ExtendedFileFormatConfiguration<C> config,
-	                       @NotNull final BeanAssembly<C, T> beanAssembly) {
+	private CsvToBeanParser(final CsvParser<Stream<Map<C, String>>> delegate, final BeanAssembly<C, T> beanAssembly) {
+		this.delegate = delegate;
+		this.beanAssembly = beanAssembly;
+	}
+
+	private CsvToBeanParser(@NotNull final ExtendedFileFormatConfiguration<C> config,
+	                        @NotNull final BeanAssembly<C, T> beanAssembly) {
 		final FileFormatConfiguration basicConfig = FileFormatConfiguration.builder()
 						.parserLocale(config.getParserLocale())
 						.lineBreak(config.getLineBreak())

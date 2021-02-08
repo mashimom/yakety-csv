@@ -1,21 +1,19 @@
-package org.shimomoto.yakety.csv;
+package org.shimomoto.yakety.csv.config;
 
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.IFileFormatConfiguration;
 
-import java.util.List;
 import java.util.Locale;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Builder(toBuilder = true)
 @Value
 @Slf4j
-public class ExtendedFileFormatConfiguration<C>  implements IFileFormatConfiguration {
+public class FileFormatConfiguration implements IFileFormatConfiguration {
 	@Builder.Default
 	Locale parserLocale = Locale.US;
 	@Builder.Default
@@ -25,10 +23,11 @@ public class ExtendedFileFormatConfiguration<C>  implements IFileFormatConfigura
 	@Builder.Default
 	char quote = '"';
 	@Builder.Default
-	boolean trim = false;
-	@NotNull C indexColumn;
-	@Builder.Default
-	@NotNull List<C> columns = List.of();
-
-
+	boolean trim = false; //TODO: move to column by column option
+//	@Builder.Default
+//	int skipFromTop = 0; //TODO: move to content configuration
+//	@Builder.Default
+//	boolean headerless = false; //TODO: move to content configuration
+//	@Builder.Default
+//	boolean endsWithEmptyLine = true; //TODO: move to content configuration, maybe?
 }
