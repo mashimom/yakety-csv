@@ -13,20 +13,20 @@ import java.util.Locale;
 
 
 @Slf4j
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Value
 class LocalDateFieldParser extends BaseFieldParser<LocalDate> {
 
 	Locale locale;
 
-	public LocalDateFieldParser(final DateTimeFormatter format, final Locale locale) {
+	public LocalDateFieldParser(final java.time.format.DateTimeFormatter format, final Locale locale) {
 		super((s, l) -> LocalDateFieldParser.safeParse(s, l, format));
 		this.locale = locale;
 	}
 
 	public static @Nullable LocalDate safeParse(final String text,
 	                                            @NotNull final Locale locale,
-	                                            @NotNull final DateTimeFormatter format) {
+	                                            @NotNull final java.time.format.DateTimeFormatter format) {
 		if (text == null) {
 			return null;
 		}

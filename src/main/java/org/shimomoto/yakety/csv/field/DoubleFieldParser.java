@@ -6,7 +6,7 @@ import org.apache.commons.validator.routines.DoubleValidator;
 
 import java.util.Locale;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Value
 class DoubleFieldParser extends BaseFieldParser<Double> {
 

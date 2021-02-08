@@ -6,7 +6,7 @@ import org.apache.commons.validator.routines.IntegerValidator;
 
 import java.util.Locale;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Value
 class IntegerFieldParser extends BaseFieldParser<Integer> {
 

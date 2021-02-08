@@ -6,7 +6,7 @@ import org.apache.commons.validator.routines.FloatValidator;
 
 import java.util.Locale;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Value
 class FloatFieldParser extends BaseFieldParser<Float> {
 

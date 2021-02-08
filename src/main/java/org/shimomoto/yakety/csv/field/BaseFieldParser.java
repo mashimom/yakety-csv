@@ -11,6 +11,7 @@ import java.util.function.BiFunction;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public abstract class BaseFieldParser<F> implements FieldParser<F> {
+	//SIC: You cannot hash functions
 	BiFunction<@Nullable String, @NotNull Locale, @Nullable F> localizedParser;
 
 	protected BaseFieldParser(final BiFunction<@Nullable String, @NotNull Locale, @Nullable F> localizedParser) {
