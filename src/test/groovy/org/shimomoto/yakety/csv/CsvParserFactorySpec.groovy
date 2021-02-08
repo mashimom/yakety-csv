@@ -94,6 +94,14 @@ class CsvParserFactorySpec extends Specification {
 		result.columnNames == ['title']
 	}
 
+	def "toTextMap, string columns - fails due to columns duplication"() {
+		when:
+		CsvParserFactory.toTextMap(config, ['title', 'title'])
+
+		then:
+		thrown IllegalArgumentException
+	}
+
 	def "toTextMap, non-string columns - parser to stream of fields by columns works"() {
 		when:
 		def result = CsvParserFactory.toTextMap(config, [title])
@@ -111,6 +119,14 @@ class CsvParserFactorySpec extends Specification {
 		result.columnNames == [title]
 	}
 
+	def "toTextMap, non-string columns - fails on duplicate columns"() {
+		when:
+		CsvParserFactory.toTextMap(config, [title, title])
+
+		then:
+		thrown IllegalArgumentException
+	}
+
 	def "toRowIndexedTextMap - parser to stream of fields by columns with derived index works"() {
 		when:
 		def result = CsvParserFactory.toRowIndexedTextMap(config, index, [title])
@@ -126,6 +142,14 @@ class CsvParserFactorySpec extends Specification {
 		result.fieldRegex != null
 		result.escapeQuoteRegex != null
 		result.columnNames == [index, title]
+	}
+
+	def "toRowIndexedTextMap - fails on duplicate columns"() {
+		when:
+		CsvParserFactory.toRowIndexedTextMap(config, index, [index, title])
+
+		then:
+		thrown IllegalArgumentException
 	}
 
 	def "toBeans - parser to stream of fields by columns with derived index works"() {
@@ -155,5 +179,23 @@ class CsvParserFactorySpec extends Specification {
 		result.delegate.fieldRegex != null
 		result.delegate.escapeQuoteRegex != null
 		result.delegate.columnNames == [index, title]
+	}
+
+	def "toBeans - fails on duplicate columns"() {
+		given:
+		ExtendedFileFormatConfiguration exConfig = ExtendedFileFormatConfiguration.builder()
+						.parserLocale(Locale.JAPAN)
+						.lineBreak('|' as char)
+						.separator(';' as char)
+						.quote('~' as char)
+						.trim(true)
+						.indexColumn(index)
+						.columns([title, index])
+						.build()
+		when:
+		CsvParserFactory.toBeans(exConfig, beanAssembly)
+
+		then:
+		thrown IllegalArgumentException
 	}
 }
