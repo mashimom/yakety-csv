@@ -3,6 +3,7 @@ package org.shimomoto.yakety.csv
 import java.nio.charset.StandardCharsets
 import java.util.stream.Collectors
 
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration
 import spock.lang.Specification
 import spock.lang.Subject
 

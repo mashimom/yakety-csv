@@ -3,6 +3,7 @@ package org.shimomoto.yakety.csv
 
 import java.util.stream.Collectors
 
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -52,31 +53,31 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 	def "BASICS - equals and hashcode as expected"() {
 		given:
 		def cols = ['lala', 'lele', 'lili', 'lolo']
-		def parser = CsvToRowIndexedTextMapParser.from(c, 'index', cols)
-		def same = CsvToRowIndexedTextMapParser.from(c, 'index', cols)
-		def other = CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().trim(false).build(), 'index', cols)
+		def conf1 = FileFormatConfiguration.builder().trim(true).build()
+		def conf2 = FileFormatConfiguration.builder()
+						.parserLocale(Locale.forLanguageTag('pt-BR'))
+						.lineBreak('\n' as char)
+						.separator(';' as char)
+						.quote('|' as char)
+						.trim(true)
+						.build()
+		and: 'subjects'
+		def parser = CsvToRowIndexedTextMapParser.from(conf1, 'index', cols)
+		def same = CsvToRowIndexedTextMapParser.from(conf1, 'index', cols)
+		def other = CsvToRowIndexedTextMapParser.from(conf2, 'index', cols)
+		def another = CsvToRowIndexedTextMapParser.from(conf2, 'index', ['lulu', *cols])
 
 		expect: 'parsers from same config have same hash code'
 		parser.hashCode() == same.hashCode()
 		and: 'parsers from different config have different hash code'
 		parser.hashCode() != other.hashCode()
-		same.hashCode() != other.hashCode()
+		parser.hashCode() != another.hashCode()
 
 		and: 'parsers from same config are equal'
 		parser == same
 		and: 'parsers from different config are not equal'
 		parser != other
-		same != other
-
-		where:
-		c << [FileFormatConfiguration.builder().trim(true).build(),
-		      FileFormatConfiguration.builder()
-						      .parserLocale(Locale.forLanguageTag('pt-BR'))
-						      .lineBreak('\n' as char)
-						      .separator(';' as char)
-						      .quote('|' as char)
-						      .trim(true)
-						      .build()]
+		parser != another
 	}
 
 	def "BASICS - Repeated columns will fail"() {
