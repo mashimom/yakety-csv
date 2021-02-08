@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import org.shimomoto.yakety.csv.api.BeanAssembly;
 import org.shimomoto.yakety.csv.api.ColumnDefinition;
 import org.shimomoto.yakety.csv.api.CsvParser;
+import org.shimomoto.yakety.csv.config.ExtendedFileFormatConfiguration;
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -11,6 +11,8 @@ import configuration.marvel.csv.MarvelUniverseMedia
 import configuration.marvel.domain.MCUPhases
 import configuration.marvel.domain.MediaVehicle
 import org.apache.commons.lang3.Range
+import org.shimomoto.yakety.csv.config.ExtendedFileFormatConfiguration
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration
 import spock.lang.Specification
 
 class MarvelIT extends Specification {
