@@ -42,6 +42,7 @@ toc::[]
 * Caching of parsed results (denormalized files tend to repeat a lot).
 * Support for custom separators, line breaks and quotes __(maybe?)__
 * in case there is a coercion error, return a marker that point to file, line, field where problem happened.
+* replace apache validation library with own parser and include a formatter parameter that is not recreated on every call
 
 == Release Plans
 
@@ -206,6 +207,7 @@ then open link:build/reports/spock-reports/integrationTest/index.html[], these a
 . [.line-through]#Regular expressions with matches and groups take more processing power, the lookahead doesn't and works as would the index based string walk.# +
 The regular expression break by line blows up the stack; the solution I can think of is to consume lines, then check if there is an open quote, consume another line until all open quotes are closed, then it would be better to just already consume fields while at that.
 . Java Pattern class cannot be used on hash or equals 🤷.
+. Apache validation library recreates Formatter on every call, so it does what is needed (no exception while parsing) but may degrade performance on large volumes.
 
 == Questions
 
