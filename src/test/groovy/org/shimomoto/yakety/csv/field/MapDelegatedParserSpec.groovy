@@ -26,6 +26,8 @@ class MapDelegatedParserSpec extends Specification {
 		MapDelegatedParser<Integer, String> another = new MapDelegatedParser<Integer, String>(anotherDelegate, key)
 
 		expect: 'matches'
+		fieldParser.hashCode() == fieldParser.hashCode()
+		fieldParser == fieldParser
 		fieldParser.hashCode() == same.hashCode()
 		fieldParser == same
 		and: 'different'
