@@ -83,7 +83,7 @@ class MapFieldParserFactorySpec extends Specification {
 
 	def "forLocalDate works"() {
 		given:
-		DateTimeFormatter fmt = DateTimeFormatter.ISO_DATE
+		java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ISO_DATE
 
 		when:
 		def result = factory.forLocalDate(someKey, fmt)
@@ -97,7 +97,7 @@ class MapFieldParserFactorySpec extends Specification {
 
 	def "forLocalDateTime works"() {
 		given:
-		DateTimeFormatter fmt = DateTimeFormatter.ISO_DATE_TIME
+		java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ISO_DATE_TIME
 
 		when:
 		def result = factory.forLocalDateTime(someKey, fmt)

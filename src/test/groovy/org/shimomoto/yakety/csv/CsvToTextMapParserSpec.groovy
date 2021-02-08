@@ -3,6 +3,7 @@ package org.shimomoto.yakety.csv
 
 import java.util.stream.Collectors
 
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration
 import spock.lang.Specification
 
 class CsvToTextMapParserSpec extends Specification {
