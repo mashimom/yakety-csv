@@ -11,9 +11,12 @@ endif::[]
 
 = yakety-csv
 
-The yakety-csv or _Yet-Another-Know-Everything-Tentative-Yap-CSV_ library.
-It should work with any character separator, so `,`, `;` and `tabs`; even custom separators.
+The yakety-csv or _Yet-Another-Know-Everything-Tentative-Yap-CSV_ Java library. +
+It should work with any field character separator, so `,`, `;` and `tabs`; even custom separators. +
 At this point it only works with single character line break: `\n`, `\r` or custom single character. Soon support for Windows `\r\n` will be added.
+
+It is meant to be configured and only require little coding for usage. Also, the main feature is to parse the file lazily; keeping memory usage low even while parsing GB long files.
+
 
 IMPORTANT: There are plenty implementations out there, please look for them, this is an exercise.
 
@@ -24,8 +27,8 @@ toc::[]
 * Fully functional, Java Stream based API
 * Configuration over code: +
 "`library user defines rules not process`"
-** Columns are defined for reuse (enum?)
-* Full support to RFC4180 both strict and non-strict
+** Columns are defined for reuse (Recommendation to use an enum)
+* At some later point, full support to RFC4180 both strict and non-strict
 * Support for different locales
 * Support for quoted values
 * On parsing:
@@ -39,8 +42,8 @@ toc::[]
 
 === Bucket list
 
-* Caching of parsed results (denormalized files tend to repeat a lot).
-* Support for custom separators, line breaks and quotes __(maybe?)__
+* Caching of parsed results (denormalized files tend to repeat a lot, memoized field parsing may save time in some cases).
+* Support for custom line breaks that are more than one character long
 * in case there is a coercion error, return a marker that point to file, line, field where problem happened.
 * replace apache validation library with own parser and include a formatter parameter that is not recreated on every call
 
@@ -50,7 +53,7 @@ toc::[]
 * `v0.1.X` - stream String value of fields from a csv using strict RFC4180
 * `v0.2.X` - Enable column configuration
 * `v0.3.X`?- Proper handle of quotes
-* [.line-through]#`v1.0.X` - stream Map.Entry of String values by column (RFC4180)#
+* `v1.0.X` - stream Map.Entry of String values by column (RFC4180)
 * [.line-through]#`v1.1.X` - nullable columns (map stream cannot take null values)#
 * [.line-through]#`v1.2.X` - proper limited parsing of int and double#
 * [.line-through]#`v1.3.X` - proper parsing of long and float#
@@ -58,13 +61,13 @@ toc::[]
 * [.line-through]#`v1.5.X` - proper parsing of Date, Time and DateTime#
 * [.line-through]#`v1.6.X` - proper parsing of BigInteger and BigDecimal#
 * [.line-through]#`v1.7.X` - support to domain values (enum) parsing#
-* `v2.0.0` - Bean assembly from the text by column map, includes:
-    - safe parsing of standards types: int, long, float, double, BigInteger, BigDecimal, LocalDate, LocalDateTime, LocalTime.
+* `v2.0.0` - Populate a java bean from the textual field by column map, includes:
+    - safe parsing of standard nullable types: Integer, Long, Float, Double, BigInteger, BigDecimal, LocalDate, LocalDateTime, LocalTime.
     - parsing of domain-based values backed by enums;
     - API for custom field parsing;
     - API that joins field parser and map's key lookup;
     - any field that fails to be parsed is null;
-    - all API avoids exceptions so the stream is never broken;
+    - all API avoids exceptions, so the stream is never broken;
     - API for a transformer from Map<K, String> to java bean.
     - API for indexed/id'ed beans
 * `v2.0.1` - refactoring and test coverage improvements
@@ -119,7 +122,7 @@ org.gradle.caching=true
 org.gradle.daemon.idletimeout=1800000
 org.gradle.java.home=/home/user/.sdkman/candidates/java/14.0.2-open # <1>
 -----------------------------------------------------------
-<1> your own path for the JDK 15
+<1> your own path for the JDK 14
 
 === _TL;DR_
 
@@ -165,7 +168,7 @@ final Stream<Map<String,String>> textResults =
 
 -----------------------------------------------------------
 
-=== Simple CSV to `Stream<?>`
+=== Simple CSV to `Stream<?> where ? is a POJO`
 
 It builds upon the fields by column map with a dynamic index, those results are used to build a Java Bean.
 
