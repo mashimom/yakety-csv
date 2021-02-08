@@ -91,7 +91,7 @@ integrationTest {
 jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: ['org/shimomoto/yakety/csv/FileFormatConfiguration.class',])
+            fileTree(dir: it, exclude: ['org/shimomoto/yakety/csv/config/*',])
         }))
     }
     dependsOn test
