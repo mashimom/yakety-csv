@@ -7,7 +7,7 @@ import org.apache.commons.validator.routines.BigDecimalValidator;
 import java.math.BigDecimal;
 import java.util.Locale;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Value
 class BigDecimalFieldParser extends BaseFieldParser<BigDecimal> {
 

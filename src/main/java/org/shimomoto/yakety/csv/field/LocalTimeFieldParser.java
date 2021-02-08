@@ -12,20 +12,20 @@ import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
 @Slf4j
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Value
 class LocalTimeFieldParser extends BaseFieldParser<LocalTime> {
 
 	Locale locale;
 
-	public LocalTimeFieldParser(final DateTimeFormatter format, final Locale locale) {
+	public LocalTimeFieldParser(final java.time.format.DateTimeFormatter format, final Locale locale) {
 		super((s, l) -> LocalTimeFieldParser.safeParse(s, l, format));
 		this.locale = locale;
 	}
 
 	public static @Nullable LocalTime safeParse(final String text,
 	                                            @NotNull final Locale locale,
-	                                            @NotNull final DateTimeFormatter format) {
+	                                            @NotNull final java.time.format.DateTimeFormatter format) {
 		if (text == null) {
 			return null;
 		}

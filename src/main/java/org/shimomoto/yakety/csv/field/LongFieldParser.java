@@ -6,7 +6,7 @@ import org.apache.commons.validator.routines.LongValidator;
 
 import java.util.Locale;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Value
 class LongFieldParser extends BaseFieldParser<Long> {
 

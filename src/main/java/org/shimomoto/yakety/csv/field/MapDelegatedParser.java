@@ -9,7 +9,7 @@ import org.shimomoto.yakety.csv.field.api.MapFieldParser;
 import java.util.Map;
 
 @Value
-public class BaseMapDelegatedParser<F,C> implements MapFieldParser<C, F> {
+public class MapDelegatedParser<F,C> implements MapFieldParser<C, F> {
 	@NotNull FieldParser<F> delegate;
 	@NotNull C key;
 
