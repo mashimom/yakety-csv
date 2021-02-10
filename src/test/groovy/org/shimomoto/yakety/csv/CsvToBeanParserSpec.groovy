@@ -17,15 +17,15 @@ class CsvToBeanParserSpec extends Specification {
 			this.id = id
 			this.title = title
 		}
-		Long id;
-		String title;
+		Long id
+		String title
 	}
 
 	interface MyColumn extends ColumnDefinition {}
 	MyColumn title
 	MyColumn index
 
-	FileFormatConfiguration config = FileFormatConfiguration.builder().build()
+	FileFormatConfiguration config
 	BeanAssembly<MyColumn, MyBean> beanAssembly = Mock(BeanAssembly)
 
 	void setup() {
@@ -39,19 +39,23 @@ class CsvToBeanParserSpec extends Specification {
 			final String displayName = '#'
 			final boolean nullable = false
 		}
+		config = FileFormatConfiguration.builder()
+						.indexColumn(index)
+						.columns([title])
+						.build()
 	}
 
 	def "BASIC - Static factory method works"() {
 		when:
-		CsvToBeanParser parser = (CsvToBeanParser) CsvToBeanParser.from(config, index, [title], beanAssembly)
+		CsvToBeanParser parser = (CsvToBeanParser) CsvToBeanParser.from(config, beanAssembly)
 
 		then:
 		parser != null
 		parser.delegate != null
 		parser.delegate instanceof CsvToRowIndexedTextMapParser
 		parser.beanAssembly == beanAssembly
-//		and: 'interactions'
-//		1 *
+		and: 'interactions'
+		0 * _
 	}
 
 	def "BASIC - Static factory method fails on bad index"() {
@@ -61,22 +65,20 @@ class CsvToBeanParserSpec extends Specification {
 			final String displayName = 'bad'
 			final boolean nullable = false
 		}
+		def newConfig = config.toBuilder().indexColumn(badIndex).build()
 		when:
-		CsvToBeanParser.from(config, badIndex, [title], beanAssembly)
+		CsvToBeanParser.from(newConfig, beanAssembly)
 
 		then:
 		thrown IllegalArgumentException
 	}
 
 	def "BASIC - Static factory method fails on duplicated column"() {
-		when:
-		CsvToBeanParser.from(config, index, [title, title], beanAssembly)
-
-		then:
-		thrown IllegalArgumentException
+		given:
+		def newConfig = config.toBuilder().indexColumn(index).columns([title, index]).build()
 
 		when:
-		CsvToBeanParser.from(config, index, [title, index], beanAssembly)
+		CsvToBeanParser.from(newConfig, beanAssembly)
 
 		then:
 		thrown IllegalArgumentException
@@ -89,16 +91,22 @@ class CsvToBeanParserSpec extends Specification {
 			final String displayName = 'description'
 			final boolean nullable = true
 		}
-		def conf1 = FileFormatConfiguration.builder().build()
-		def conf2 = FileFormatConfiguration.builder()
+		def conf1 = FileFormatConfiguration.builder()
+						.indexColumn(index)
+						.columns([title])
+						.build()
+		def conf2 = conf1.toBuilder()
 						.quote('`' as char)
 						.separator(';' as char)
-						.build();
+						.build()
+		def conf3 = conf1.toBuilder()
+						.columns([title, extraCol])
+						.build()
 		and: 'subjects'
-		def parser = CsvToBeanParser.from(conf1, index, [title], beanAssembly)
-		def same = CsvToBeanParser.from(conf1, index, [title], beanAssembly)
-		def other = CsvToBeanParser.from(conf2, index, [title], beanAssembly)
-		def another = CsvToBeanParser.from(conf1, index, [title, extraCol], beanAssembly)
+		def parser = CsvToBeanParser.from(conf1, beanAssembly)
+		def same = CsvToBeanParser.from(conf1, beanAssembly)
+		def other = CsvToBeanParser.from(conf2, beanAssembly)
+		def another = CsvToBeanParser.from(conf3, beanAssembly)
 
 		expect:
 		parser.hashCode() == same.hashCode()
@@ -116,10 +124,10 @@ class CsvToBeanParserSpec extends Specification {
 	def "BASIC - should not be equal but is"() {
 		given:
 		def conf1 = FileFormatConfiguration.builder().build()
-		def conf2 = FileFormatConfiguration.builder().separator(';' as char).build();
+		def conf2 = FileFormatConfiguration.builder().separator(';' as char).build()
 		and: 'subjects'
-		def parser = CsvToBeanParser.from(conf1, index, [title], beanAssembly)
-		def other = CsvToBeanParser.from(conf2, index, [title], beanAssembly)
+		def parser = CsvToBeanParser.from(conf1, beanAssembly)
+		def other = CsvToBeanParser.from(conf2, beanAssembly)
 
 		expect:
 		parser != other
@@ -128,7 +136,7 @@ class CsvToBeanParserSpec extends Specification {
 
 	def "parse works"() {
 		given:
-		CsvToBeanParser parser = (CsvToBeanParser) CsvToBeanParser.from(config, index, [title], beanAssembly)
+		CsvToBeanParser parser = (CsvToBeanParser) CsvToBeanParser.from(config, beanAssembly)
 		def contentLines = [
 						'title',
 						'Iron Man',
@@ -145,6 +153,8 @@ class CsvToBeanParserSpec extends Specification {
 
 		then:
 		result != null
+		and: 'interactions'
+		0 * _
 	}
 
 	def "Parse works"() {

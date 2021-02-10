@@ -9,13 +9,15 @@ import spock.lang.Specification
 class CsvToTextMapParserSpec extends Specification {
 
 	@SuppressWarnings('GroovyAccessibility')
-	def "BASICS - Create new parser from default configuration"() {
+	def "BASICS - Create new parser from configuration"() {
 		given:
-		def config = FileFormatConfiguration.builder().build()
 		def cols = ['lala', 'lele', 'lili', 'lolo']
+		def config = FileFormatConfiguration.builder()
+						.columns(cols)
+						.build()
 
 		when:
-		def parser = CsvToTextMapParser.from(config, cols)
+		def parser = CsvToTextMapParser.from(config)
 
 		then:
 		parser.fieldRegex.toString() == ',(?=([^"]*"[^"]*")*[^"]*$)'
@@ -24,23 +26,24 @@ class CsvToTextMapParserSpec extends Specification {
 		parser.columnNames == cols
 
 		expect: 'parsers with same config are identical'
-		parser == CsvToTextMapParser.from(config, cols)
+		parser == CsvToTextMapParser.from(config)
 	}
 
 	@SuppressWarnings('GroovyAccessibility')
-	def "BASICS - Create new parser from custom configuration"() {
+	def "BASICS - Create new parser from heavily modifies configuration"() {
 		given:
+		def cols = ['lala', 'lele', 'lili', 'lolo']
 		def config = FileFormatConfiguration.builder()
 						.parserLocale(Locale.forLanguageTag('pt-BR'))
 						.lineBreak('\n' as char)
 						.separator(';' as char)
 						.quote('|' as char)
 						.trim(true)
+						.columns(cols)
 						.build()
-		def cols = ['lala', 'lele', 'lili', 'lolo']
 
 		when:
-		def parser = CsvToTextMapParser.from(config, cols)
+		def parser = CsvToTextMapParser.from(config)
 
 		then:
 		parser.fieldRegex.toString() == ';(?=([^|]*|[^|]*|)*[^|]*$)'
@@ -51,15 +54,25 @@ class CsvToTextMapParserSpec extends Specification {
 		parser.columnNames == cols
 
 		expect: 'parsers with same config are identical'
-		parser == CsvToTextMapParser.from(config, cols)
+		parser == CsvToTextMapParser.from(config)
 	}
 
 	def "BASICS - equals and hashcode as expected"() {
 		given:
 		def cols = ['lala', 'lele', 'lili', 'lolo']
-		def parser = CsvToTextMapParser.from(c, cols)
-		def same = CsvToTextMapParser.from(c, cols)
-		def other = CsvToTextMapParser.from(FileFormatConfiguration.builder().trim(false).build(), cols)
+		def conf1 = FileFormatConfiguration.builder().trim(true).columns(cols).build()
+		def conf2 = FileFormatConfiguration.builder()
+						.parserLocale(Locale.forLanguageTag('pt-BR'))
+						.lineBreak('\n' as char)
+						.separator(';' as char)
+						.quote('|' as char)
+						.trim(true)
+						.columns(cols)
+						.build()
+		and: 'parsers'
+		def parser = CsvToTextMapParser.from(conf1)
+		def same = CsvToTextMapParser.from(conf1)
+		def other = CsvToTextMapParser.from(conf2)
 
 		expect: 'parsers from same config have same hash code'
 		parser.hashCode() == same.hashCode()
@@ -70,31 +83,28 @@ class CsvToTextMapParserSpec extends Specification {
 		and: 'parsers from same config are equal'
 		parser == same
 		and: 'parsers from different config are not equal'
+		parser != null
+		parser != new Object()
 		parser != other
-		same != other
-
-		where:
-		c << [FileFormatConfiguration.builder().trim(true).build(),
-		      FileFormatConfiguration.builder()
-						      .parserLocale(Locale.forLanguageTag('pt-BR'))
-						      .lineBreak('\n' as char)
-						      .separator(';' as char)
-						      .quote('|' as char)
-						      .trim(true)
-						      .build()]
 	}
 
 	def "BASICS - Repeated columns will fail"() {
+		given:
+		def conf = FileFormatConfiguration.builder().columns(['lala', 'lala', 'lili']).build()
+
 		when:
-		CsvToTextMapParser.from(FileFormatConfiguration.builder().build(), ['lala', 'lala', 'lili'])
+		CsvToTextMapParser.from(conf)
 
 		then:
 		thrown IllegalArgumentException
 	}
 
 	def "BASICS - null columns will fail"() {
+		given:
+		def conf = FileFormatConfiguration.builder().columns(['lala', null, 'lili']).build()
+
 		when:
-		CsvToTextMapParser.from(FileFormatConfiguration.builder().build(), ['lala', null, 'lili'])
+		CsvToTextMapParser.from(conf)
 
 		then:
 		thrown IllegalArgumentException
@@ -102,8 +112,6 @@ class CsvToTextMapParserSpec extends Specification {
 
 	def "Parse a simple sample with defaults"() {
 		given:
-		def cols = ['Title', 'Release date', 'Phase', 'Film/TV', 'In-universe year']
-		def parser = CsvToTextMapParser.from(FileFormatConfiguration.builder().trim(true).build(), cols)
 		def contentLines = [
 						'Title,                              Release date, Phase, Film/TV, In-universe year',
 						'Iron Man,                           2008-05-02,   1,     Film,    2008',
@@ -115,6 +123,10 @@ class CsvToTextMapParserSpec extends Specification {
 						''
 		]
 		def content = contentLines.join('\n')
+		and: 'parser'
+		def cols = ['Title', 'Release date', 'Phase', 'Film/TV', 'In-universe year']
+		def conf = FileFormatConfiguration.builder().trim(true).columns(cols).build()
+		def parser = CsvToTextMapParser.from(conf)
 
 		when:
 		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())
@@ -131,8 +143,6 @@ class CsvToTextMapParserSpec extends Specification {
 
 	def "Parse a complex sample"() {
 		given:
-		def cols = ['Make', 'Model', 'Description', 'Price']
-		def parser = CsvToTextMapParser.from(FileFormatConfiguration.builder().build(), cols)
 		def contentLines = [
 						'Make,Model,Description,Price',
 						'Dell,P3421W,"Dell 34, Curved, USB-C Monitor",2499.00',
@@ -143,6 +153,10 @@ class CsvToTextMapParserSpec extends Specification {
 						''
 		]
 		def content = contentLines.join('\n')
+		and: 'parser'
+		def cols = ['Make', 'Model', 'Description', 'Price']
+		def conf = FileFormatConfiguration.builder().columns(cols).build()
+		def parser = CsvToTextMapParser.from(conf)
 
 		when:
 		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())

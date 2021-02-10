@@ -1,9 +1,7 @@
 package org.shimomoto.yakety.csv
 
-
 import org.shimomoto.yakety.csv.api.BeanAssembly
 import org.shimomoto.yakety.csv.api.ColumnDefinition
-import org.shimomoto.yakety.csv.config.ExtendedFileFormatConfiguration
 import org.shimomoto.yakety.csv.config.FileFormatConfiguration
 import spock.lang.Specification
 
@@ -13,21 +11,15 @@ class CsvParserFactorySpec extends Specification {
 			this.id = id
 			this.title = title
 		}
-		Long id;
-		String title;
+		Long id
+		String title
 	}
 
 	interface MyColumn extends ColumnDefinition {}
 	MyColumn title
 	MyColumn index
 
-	FileFormatConfiguration config = FileFormatConfiguration.builder()
-					.parserLocale(Locale.JAPAN)
-					.lineBreak('|' as char)
-					.separator(';' as char)
-					.quote('~' as char)
-					.trim(true)
-					.build()
+	FileFormatConfiguration config
 	BeanAssembly<MyColumn, MyBean> beanAssembly = Mock(BeanAssembly)
 
 	void setup() {
@@ -41,11 +33,22 @@ class CsvParserFactorySpec extends Specification {
 			final String displayName = '#'
 			final boolean nullable = false
 		}
+		config = FileFormatConfiguration.builder()
+						.parserLocale(Locale.JAPAN)
+						.lineBreak('|' as char)
+						.separator(';' as char)
+						.quote('~' as char)
+						.trim(true)
+						.indexColumn(index)
+						.columns([title])
+						.linesBeforeHeader(1)
+						.headerless(true)
+						.build()
 	}
 
 	def "toText - parser to stream of line fields works"() {
 		when:
-		def result = CsvParserFactory.toText(config)
+		def result = CsvParserFactory.toText(config.toBuilder().indexColumn(null).columns([]).build())
 
 		then:
 		result != null
@@ -60,26 +63,18 @@ class CsvParserFactorySpec extends Specification {
 	}
 
 	def "toText - parser to stream of line fields works with defaults"() {
-		given:
-		FileFormatConfiguration defaultsConfig = FileFormatConfiguration.builder().build()
 		when:
-		def result = CsvParserFactory.toText(null)
+		CsvParserFactory.toText(null)
 
 		then:
-		result != null
-		result instanceof CsvToTextParser
-		result.quote == defaultsConfig.quote
-		result.lineBreak == defaultsConfig.lineBreak
-		result.trim == defaultsConfig.trim
-		result.lineSplitter.lineBreak == (int) defaultsConfig.lineBreak
-		result.lineSplitter.quote == (int) defaultsConfig.quote
-		result.fieldRegex != null
-		result.escapeQuoteRegex != null
+		thrown NullPointerException
 	}
 
 	def "toTextMap, string columns - parser to stream of fields by columns works"() {
+		given:
+		def newConfig = config.toBuilder().indexColumn(null).columns(['title']).build()
 		when:
-		def result = CsvParserFactory.toTextMap(config, ['title'])
+		def result = CsvParserFactory.toTextMap(newConfig)
 
 		then:
 		result != null
@@ -96,15 +91,17 @@ class CsvParserFactorySpec extends Specification {
 
 	def "toTextMap, string columns - fails due to columns duplication"() {
 		when:
-		CsvParserFactory.toTextMap(config, ['title', 'title'])
+		CsvParserFactory.toTextMap(config.toBuilder().columns([title,title]).build())
 
 		then:
 		thrown IllegalArgumentException
 	}
 
 	def "toTextMap, non-string columns - parser to stream of fields by columns works"() {
+		given:
+		def newConfig = config.toBuilder().indexColumn(null).build()
 		when:
-		def result = CsvParserFactory.toTextMap(config, [title])
+		def result = CsvParserFactory.toTextMap(newConfig)
 
 		then:
 		result != null
@@ -121,7 +118,7 @@ class CsvParserFactorySpec extends Specification {
 
 	def "toTextMap, non-string columns - fails on duplicate columns"() {
 		when:
-		CsvParserFactory.toTextMap(config, [title, title])
+		CsvParserFactory.toTextMap(config.toBuilder().columns([title, title]).build())
 
 		then:
 		thrown IllegalArgumentException
@@ -129,7 +126,7 @@ class CsvParserFactorySpec extends Specification {
 
 	def "toRowIndexedTextMap - parser to stream of fields by columns with derived index works"() {
 		when:
-		def result = CsvParserFactory.toRowIndexedTextMap(config, index, [title])
+		def result = CsvParserFactory.toRowIndexedTextMap(config)
 
 		then:
 		result != null
@@ -146,7 +143,7 @@ class CsvParserFactorySpec extends Specification {
 
 	def "toRowIndexedTextMap - fails on duplicate columns"() {
 		when:
-		CsvParserFactory.toRowIndexedTextMap(config, index, [index, title])
+		CsvParserFactory.toRowIndexedTextMap(config.toBuilder().columns([index,title]).build())
 
 		then:
 		thrown IllegalArgumentException
@@ -154,15 +151,15 @@ class CsvParserFactorySpec extends Specification {
 
 	def "toBeans - parser to stream of fields by columns with derived index works"() {
 		given:
-		ExtendedFileFormatConfiguration exConfig = ExtendedFileFormatConfiguration.builder()
-										.parserLocale(Locale.JAPAN)
-										.lineBreak('|' as char)
-										.separator(';' as char)
-										.quote('~' as char)
-										.trim(true)
-										.indexColumn(index)
-										.columns([title])
-										.build()
+		FileFormatConfiguration exConfig = FileFormatConfiguration.builder()
+						.parserLocale(Locale.JAPAN)
+						.lineBreak('|' as char)
+						.separator(';' as char)
+						.quote('~' as char)
+						.trim(true)
+						.indexColumn(index)
+						.columns([title])
+						.build()
 		when:
 		def result = CsvParserFactory.toBeans(exConfig, beanAssembly)
 
@@ -183,7 +180,7 @@ class CsvParserFactorySpec extends Specification {
 
 	def "toBeans - fails on duplicate columns"() {
 		given:
-		ExtendedFileFormatConfiguration exConfig = ExtendedFileFormatConfiguration.builder()
+		FileFormatConfiguration exConfig = FileFormatConfiguration.builder()
 						.parserLocale(Locale.JAPAN)
 						.lineBreak('|' as char)
 						.separator(';' as char)

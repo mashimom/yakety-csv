@@ -29,7 +29,7 @@ abstract class BaseCsvParser<S> implements CsvParser<S> {
 	@EqualsAndHashCode.Exclude
 	Pattern escapeQuoteRegex;
 
-	protected BaseCsvParser(@NotNull final FileFormatConfiguration configuration) {
+	protected BaseCsvParser(@NotNull final FileFormatConfiguration<?> configuration) {
 		this.quote = configuration.getQuote();
 		this.lineBreak = configuration.getLineBreak();
 		this.trim = configuration.isTrim();

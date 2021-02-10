@@ -11,7 +11,6 @@ import configuration.marvel.csv.MarvelUniverseMedia
 import configuration.marvel.domain.MCUPhases
 import configuration.marvel.domain.MediaVehicle
 import org.apache.commons.lang3.Range
-import org.shimomoto.yakety.csv.config.ExtendedFileFormatConfiguration
 import org.shimomoto.yakety.csv.config.FileFormatConfiguration
 import spock.lang.Specification
 
@@ -80,7 +79,7 @@ class MarvelIT extends Specification {
 
 	def "Parser to beans works on small set of lines"() {
 		given:
-		def config = ExtendedFileFormatConfiguration.builder()
+		def config = FileFormatConfiguration.builder()
 						.trim(true)
 						.indexColumn(INDEX)
 						.columns(values().toList())
@@ -103,7 +102,7 @@ class MarvelIT extends Specification {
 
 	def "Parser to beans works without exceptions to full number of lines, even when data is malformed for the type"() {
 		given:
-		def config = ExtendedFileFormatConfiguration.builder()
+		def config = FileFormatConfiguration.builder()
 						.trim(true)
 						.indexColumn(INDEX)
 						.columns(values().toList())
@@ -117,13 +116,18 @@ class MarvelIT extends Specification {
 		expect:
 		parser.parse(bis).collect(Collectors.toList()).size() == 64
 	}
+
 	def "Parse a small sample using code defined columns"() {
 		given:
 		IMarvelUniverseColumn index = INDEX
 		IMarvelUniverseColumn[] cols = values() as IMarvelUniverseColumn[]
-		def config = FileFormatConfiguration.builder().trim(true).build()
+		def config = FileFormatConfiguration.builder()
+						.trim(true)
+						.indexColumn(index)
+						.columns(cols.toList())
+						.build()
 		and: 'a parser'
-		def parser = CsvParserFactory.toRowIndexedTextMap(config, index, cols.toList())
+		def parser = CsvParserFactory.toRowIndexedTextMap(config)
 
 		when:
 		List<Map<IMarvelUniverseColumn, String>> result = parser.parse(content).collect(Collectors.toList())
@@ -142,9 +146,13 @@ class MarvelIT extends Specification {
 		given:
 		IMarvelUniverseColumn index = INDEX
 		IMarvelUniverseColumn[] cols = values() as IMarvelUniverseColumn[]
-		def config = FileFormatConfiguration.builder().trim(true).build()
+		def config = FileFormatConfiguration.builder()
+						.trim(true)
+						.indexColumn(index)
+						.columns(cols.toList())
+						.build()
 		and: 'a parser'
-		def parser = CsvParserFactory.toRowIndexedTextMap(config, index, cols.toList())
+		def parser = CsvParserFactory.toRowIndexedTextMap(config)
 		and: 'content as inputstream'
 		BufferedInputStream content = new BufferedInputStream(getClass().getResourceAsStream('mcu.csv'))
 
@@ -159,9 +167,13 @@ class MarvelIT extends Specification {
 	def "Parse inputstream with textual defined columns"() {
 		given:
 		def cols = ['Title', 'Release date', 'Phase', 'Film/TV', 'In-universe year']
-		def config = FileFormatConfiguration.builder().trim(true).build()
+		def config = FileFormatConfiguration.builder()
+						.trim(true)
+						.indexColumn('#')
+						.columns(cols)
+						.build()
 		and: 'a parser'
-		def parser = CsvParserFactory.toRowIndexedTextMap(config, '#', cols)
+		def parser = CsvParserFactory.toRowIndexedTextMap(config)
 		and: 'content as inputstream'
 		BufferedInputStream content = new BufferedInputStream(getClass().getResourceAsStream('mcu.csv'))
 
