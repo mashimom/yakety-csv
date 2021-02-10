@@ -1,7 +1,10 @@
 package org.shimomoto.yakety.csv.api;
 
-public interface IFileFormatConfiguration {
-	java.util.Locale getParserLocale();
+import java.util.List;
+import java.util.Locale;
+
+public interface IFileFormatConfiguration<C> {
+	Locale getParserLocale();
 
 	char getLineBreak();
 
@@ -10,4 +13,12 @@ public interface IFileFormatConfiguration {
 	char getQuote();
 
 	boolean isTrim();
+
+	C getIndexColumn();
+
+	List<C> getColumns();
+
+	int getLinesBeforeHeader();
+
+	boolean isHeaderless();
 }

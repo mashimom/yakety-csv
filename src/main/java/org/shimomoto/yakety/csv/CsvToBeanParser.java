@@ -8,16 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.BeanAssembly;
 import org.shimomoto.yakety.csv.api.ColumnDefinition;
 import org.shimomoto.yakety.csv.api.CsvParser;
-import org.shimomoto.yakety.csv.config.ExtendedFileFormatConfiguration;
+import org.shimomoto.yakety.csv.config.ConfigChecker;
 import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,53 +23,32 @@ class CsvToBeanParser<C extends ColumnDefinition, T> implements CsvParser<Stream
 	CsvParser<Stream<Map<C, String>>> delegate;
 	BeanAssembly<C, T> beanAssembly;
 
+	@Deprecated
+	@SuppressWarnings("unused") //Used in tests for now
 	private CsvToBeanParser(final CsvParser<Stream<Map<C, String>>> delegate, final BeanAssembly<C, T> beanAssembly) {
 		this.delegate = delegate;
 		this.beanAssembly = beanAssembly;
 	}
 
-	private CsvToBeanParser(@NotNull final ExtendedFileFormatConfiguration<C> config,
+	private CsvToBeanParser(@NotNull final FileFormatConfiguration<C> config,
 	                        @NotNull final BeanAssembly<C, T> beanAssembly) {
-		final FileFormatConfiguration basicConfig = FileFormatConfiguration.builder()
-						.parserLocale(config.getParserLocale())
-						.lineBreak(config.getLineBreak())
-						.separator(config.getSeparator())
-						.quote(config.getQuote())
-						.trim(config.isTrim())
-						.build();
-
-		this.delegate = CsvParserFactory.toRowIndexedTextMap(
-						basicConfig,
-						config.getIndexColumn(),
-						config.getColumns());
+		this.delegate = CsvParserFactory.toRowIndexedTextMap(config);
 		this.beanAssembly = beanAssembly;
 	}
 
-	public static <C extends ColumnDefinition, T> CsvParser<Stream<T>> from(@NotNull final FileFormatConfiguration config,
-	                                                                        @NotNull final C indexColName,
-	                                                                        @NotNull final List<C> columnNames,
-	                                                                        @NotNull final BeanAssembly<C, T> beanAssembly) {
-		if (indexColName.getOrder() > 0) {
-			throw new IllegalArgumentException("Index column is a virtual column and should have negative order");
-		}
-		final HashSet<C> columnsSet = Stream.concat(Stream.of(indexColName),
-						columnNames.stream())
-						.filter(Objects::nonNull)
-						.collect(Collectors.toCollection(HashSet::new));
-		if (columnsSet.size() != (columnNames.size() + 1)) {
-			throw new IllegalArgumentException("Column names must be unique and non-null");
+	public static <C extends ColumnDefinition, T> CsvParser<Stream<T>> from(
+					@NotNull final FileFormatConfiguration<C> config,
+					@NotNull final BeanAssembly<C, T> beanAssembly) {
+		if (!ConfigChecker.isValid(config)) {
+			throw new IllegalArgumentException("Invalid configuration");
 		}
 
-		final ExtendedFileFormatConfiguration<C> newConfig = ExtendedFileFormatConfiguration.<C>builder()
-						.parserLocale(config.getParserLocale())
-						.lineBreak(config.getLineBreak())
-						.separator(config.getSeparator())
-						.quote(config.getQuote())
-						.trim(config.isTrim())
-						.indexColumn(indexColName)
-						.columns(columnNames)
-						.build();
-		return new CsvToBeanParser<>(newConfig, beanAssembly);
+		//noinspection ConstantConditions
+		if (config.getIndexColumn().getOrder() > 0) {
+			throw new IllegalArgumentException("Index column is a virtual column and should have negative order");
+		}
+
+		return new CsvToBeanParser<>(config, beanAssembly);
 	}
 
 	@Override

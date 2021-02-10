@@ -9,11 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.CsvParser;
+import org.shimomoto.yakety.csv.config.ConfigChecker;
 import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,24 +24,15 @@ import java.util.stream.Stream;
 @Slf4j
 class CsvToRowIndexedTextMapParser<C> extends CsvToTextMapParser<C> implements CsvParser<Stream<Map<C, String>>> {
 
-	public CsvToRowIndexedTextMapParser(@NotNull final FileFormatConfiguration config,
-	                                    @NotNull final C indexedColumnName,
-	                                    @NotNull final List<C> columnNames) {
-		super(config, Stream.concat(Stream.of(indexedColumnName), columnNames.stream())
-						.collect(Collectors.toList()));
+	public CsvToRowIndexedTextMapParser(@NotNull final FileFormatConfiguration<C> config) {
+		super(config);
 	}
 
-	public static <C> CsvParser<Stream<Map<C, String>>> from(@NotNull final FileFormatConfiguration config,
-	                                                         @NotNull final C indexColName,
-	                                                         @NotNull final List<C> columnNames) {
-		final HashSet<C> columnsSet = Stream.concat(Stream.of(indexColName),
-						columnNames.stream())
-						.filter(Objects::nonNull)
-						.collect(Collectors.toCollection(HashSet::new));
-		if (columnsSet.size() != (columnNames.size() + 1)) {
-			throw new IllegalArgumentException("Column names must be unique and non-null");
+	public static <C> CsvParser<Stream<Map<C, String>>> from(@NotNull final FileFormatConfiguration<C> config) {
+		if (!ConfigChecker.isValid(config)) {
+			throw new IllegalArgumentException("Invalid configuration");
 		}
-		return new CsvToRowIndexedTextMapParser<>(config, indexColName, columnNames);
+		return new CsvToRowIndexedTextMapParser<>(config);
 	}
 
 	@Override

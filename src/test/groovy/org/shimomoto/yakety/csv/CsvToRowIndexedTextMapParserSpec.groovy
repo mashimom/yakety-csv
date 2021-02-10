@@ -12,11 +12,12 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 	@SuppressWarnings('GroovyAccessibility')
 	def "BASICS - Create new parser from default configuration"() {
 		given:
-		def config = FileFormatConfiguration.builder().build()
 		def cols = ['lala', 'lele', 'lili', 'lolo']
+		def config = FileFormatConfiguration.builder().indexColumn('i').columns(cols).build()
+
 
 		when:
-		def parser = CsvToRowIndexedTextMapParser.from(config, 'i', cols)
+		def parser = CsvToRowIndexedTextMapParser.from(config)
 
 		then:
 		parser.fieldRegex.toString() == ',(?=([^"]*"[^"]*")*[^"]*$)'
@@ -30,17 +31,19 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 	@SuppressWarnings('GroovyAccessibility')
 	def "BASICS - Create new parser from custom configuration"() {
 		given:
+		def cols = ['lala', 'lele', 'lili', 'lolo']
 		def config = FileFormatConfiguration.builder()
 						.parserLocale(Locale.forLanguageTag('pt-BR'))
 						.lineBreak('\n' as char)
 						.separator(';' as char)
 						.quote('|' as char)
 						.trim(true)
+						.indexColumn('index')
+						.columns(cols)
 						.build()
-		def cols = ['lala', 'lele', 'lili', 'lolo']
 
 		when:
-		def parser = CsvToRowIndexedTextMapParser.from(config, 'index', cols)
+		def parser = CsvToRowIndexedTextMapParser.from(config)
 
 		then:
 		parser.quote == '|' as char
@@ -53,19 +56,28 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 	def "BASICS - equals and hashcode as expected"() {
 		given:
 		def cols = ['lala', 'lele', 'lili', 'lolo']
-		def conf1 = FileFormatConfiguration.builder().trim(true).build()
+		def conf1 = FileFormatConfiguration.builder()
+						.trim(true)
+						.indexColumn('index')
+						.columns(cols)
+						.build()
 		def conf2 = FileFormatConfiguration.builder()
 						.parserLocale(Locale.forLanguageTag('pt-BR'))
 						.lineBreak('\n' as char)
 						.separator(';' as char)
 						.quote('|' as char)
 						.trim(true)
+						.indexColumn('index')
+						.columns(cols)
+						.build()
+		def conf3 = conf2.toBuilder()
+						.columns(['lulu', *cols])
 						.build()
 		and: 'subjects'
-		def parser = CsvToRowIndexedTextMapParser.from(conf1, 'index', cols)
-		def same = CsvToRowIndexedTextMapParser.from(conf1, 'index', cols)
-		def other = CsvToRowIndexedTextMapParser.from(conf2, 'index', cols)
-		def another = CsvToRowIndexedTextMapParser.from(conf2, 'index', ['lulu', *cols])
+		def parser = CsvToRowIndexedTextMapParser.from(conf1)
+		def same = CsvToRowIndexedTextMapParser.from(conf1)
+		def other = CsvToRowIndexedTextMapParser.from(conf2)
+		def another = CsvToRowIndexedTextMapParser.from(conf3)
 
 		expect: 'parsers from same config have same hash code'
 		parser.hashCode() == same.hashCode()
@@ -81,28 +93,41 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 	}
 
 	def "BASICS - Repeated columns will fail"() {
+		given:
+		def config = FileFormatConfiguration.builder()
+						.indexColumn('index')
+						.columns(['lala', 'lala', 'lili'])
+						.build()
 		when:
-		CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), 'index', ['lala', 'lala', 'lili'])
-
-		then:
-		thrown IllegalArgumentException
-
-		when:
-		CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), 'index', ['index', 'lala', 'lili'])
+		CsvToRowIndexedTextMapParser.from(config)
 
 		then:
 		thrown IllegalArgumentException
 	}
 
-	def "BASICS - null columns will fail"() {
+	def "BASICS - null column will fail"() {
+		given:
+		def config = FileFormatConfiguration.builder()
+						.indexColumn('index')
+						.columns(['lala', null, 'lili'])
+						.build()
+
 		when:
-		CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), 'index', ['lala', null, 'lili'])
+		CsvToRowIndexedTextMapParser.from(config)
 
 		then:
 		thrown IllegalArgumentException
+	}
+
+	def "BASICS - null index will fail"() {
+		given:
+		def config = FileFormatConfiguration.builder()
+						.indexColumn(null)
+						.columns(['lala', 'lele', 'lili'])
+						.build()
 
 		when:
-		CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), null, ['lala', 'lele', 'lili'])
+		CsvToRowIndexedTextMapParser.from(config)
 
 		then:
 		thrown IllegalArgumentException
@@ -123,8 +148,13 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 						'']
 		def content = contentLines.join('\n')
 		and: 'the parser'
+		def config = FileFormatConfiguration.builder()
+						.trim(true)
+						.indexColumn('#')
+						.columns(cols)
+						.build()
 		@Subject
-		def parser = CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().trim(true).build(), '#', cols)
+		def parser = CsvToRowIndexedTextMapParser.from(config)
 
 		when:
 		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())
@@ -142,8 +172,6 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 
 	def "Parse a complex sample"() {
 		given:
-		def cols = ['Make', 'Model', 'Description', 'Price']
-		def parser = CsvToRowIndexedTextMapParser.from(FileFormatConfiguration.builder().build(), 'ndx', cols)
 		def contentLines = [
 						'Make,Model,Description,Price',
 						'Dell,P3421W,"Dell 34, Curved, USB-C Monitor",2499.00',
@@ -153,6 +181,14 @@ class CsvToRowIndexedTextMapParserSpec extends Specification {
 						''
 		]
 		def content = contentLines.join('\n')
+		and: 'parser'
+		def cols = ['Make', 'Model', 'Description', 'Price']
+		def config = FileFormatConfiguration.builder()
+						.indexColumn('ndx')
+						.columns(cols)
+						.build()
+		@Subject
+		def parser = CsvToRowIndexedTextMapParser.from(config)
 
 		when:
 		List<Map<String, String>> result = parser.parse(content).collect(Collectors.toList())
