@@ -1,8 +1,8 @@
 package configuration.sales;
 
 import configuration.sales.api.ISalesColumn;
-import lombok.Getter;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
 
 @UtilityClass
 public class SalesVirtualColumns {
@@ -13,7 +13,7 @@ public class SalesVirtualColumns {
 		}
 
 		@Override
-		public String getDisplayName() {
+		public @NotNull String getDisplayName() {
 			return "#";
 		}
 

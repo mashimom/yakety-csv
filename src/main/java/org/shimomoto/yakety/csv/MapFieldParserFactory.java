@@ -2,8 +2,10 @@ package org.shimomoto.yakety.csv;
 
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
-import org.shimomoto.yakety.csv.field.MapDelegatedParser;
+import org.shimomoto.yakety.csv.api.HasDisplayName;
+import org.shimomoto.yakety.csv.field.BaseDomainMapParser;
 import org.shimomoto.yakety.csv.field.FieldParsers;
+import org.shimomoto.yakety.csv.field.MapDelegatedParser;
 import org.shimomoto.yakety.csv.field.api.MapFieldParser;
 
 import java.math.BigDecimal;
@@ -57,4 +59,11 @@ public class MapFieldParserFactory {
 	public <C> MapFieldParser<C, Long> forLong(final @NotNull C key) {
 		return new MapDelegatedParser<>(FieldParsers.forLong(this.locale), key);
 	}
+
+	public <C, D extends Enum<D> & HasDisplayName> MapFieldParser<C, D> forTextualDomain(
+					final @NotNull C key,
+					@NotNull final Class<D> enumType) {
+		return new BaseDomainMapParser<>(key, enumType);
+	}
+
 }
