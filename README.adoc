@@ -70,8 +70,6 @@ toc::[]
     - all API avoids exceptions, so the stream is never broken;
     - API for a transformer from Map<K, String> to java bean.
     - API for indexed/id'ed beans
-* `v2.0.1` - refactoring and test coverage improvements
-* `v2.1.0` - joining 2 existing configurations, builder decides if it has column references or not, it is transparent for the API user.
 * `v3.0.0` - Adding feature to identify parsing problems, includes:
     - Removal of all deprecated API;
     - implementation of Either;
@@ -79,6 +77,7 @@ toc::[]
     - a new interface to represent a problem parsing a field, which can be applied along with ColumnDefinition;
     - introduction of result expectation vs actual result;
     - marker pointing to location where parsing failed.
+    - generate a digest based unique id for the source file, use it as identifier
 * `v4.0.0` - first API stable version, includes:
     - optimizations
     - extra logging
@@ -141,13 +140,16 @@ The concept usage is that you are either:
 
 [source, java]
 -----------------------------------------------------------
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
+import org.shimomoto.yakety.csv.CsvParserFactory;
+
 final FileFormatConfiguration config =
-    FileFormatConfiguration.builder().build()
+        FileFormatConfiguration.builder().build()
 final CsvParser textParser =
-    org.shimomoto.yakety.csv.CsvParserFactory.toText(config)
+        CsvParserFactory.toText(config)
 
 final Stream<List<Stream>> textResults =
-    textParser.parse(new FileInputSream(new File("that_data.csv")))
+    textParser.parse(new File("that_data.csv"))
 -----------------------------------------------------------
 
 === Simple CSV to `Stream<Map<String,String>>`
@@ -158,17 +160,23 @@ It is purely positional (does not check if first field matches first header colu
 
 [source, java]
 -----------------------------------------------------------
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
+import org.shimomoto.yakety.csv.CsvParserFactory;
+
 final FileFormatConfiguration config =
-    FileFormatConfiguration.builder().build()
+        FileFormatConfiguration.builder()
+            .indexColumn("#")
+            .columns(List.of("colA","colB","colC"))
+            .build()
 final CsvParser indexedMapParser =
-    org.shimomoto.yakety.csv.CsvParserFactory.toRowIndexedTextMap(config, "#", List.of("colA","colB","colC"))
+        CsvParserFactory.toRowIndexedTextMap(config)
 
 final Stream<Map<String,String>> textResults =
-    indexedMapParser.parse(new FileInputSream(new File("that_data.csv")))
+    indexedMapParser.parse(new File("that_data.csv"))
 
 -----------------------------------------------------------
 
-=== Simple CSV to `Stream<?> where ? is a POJO`
+=== Simple CSV to `Stream<?>` where `?` is a POJO
 
 It builds upon the fields by column map with a dynamic index, those results are used to build a Java Bean.
 
@@ -176,24 +184,32 @@ A transformer from `Stream<Map<? extends ColumnDefinition,String>>` to whatever 
 
 [source, java]
 -----------------------------------------------------------
-final ExtendedFileFormatConfiguration config =
-    ExtendedFileFormatConfiguration.builder()
-        .indexColumn(MyVirtualColumns.INDX)
-        .columns(MyColumns.INDX)
-        .build()
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
+import org.shimomoto.yakety.csv.CsvParserFactory;
+
+final FileFormatConfiguration config =
+        FileFormatConfiguration.builder()
+            .indexColumn(MyVirtualColumns.INDX) // <1>
+            .columns(MyColumns.values()) // <2>
+            .build()
+
 final BeanAssembly<MyColumns, MyAggregate> transformer =
-    new MyTransformer(Locale.EN)
+    new MyTransformer(Locale.EN)  // <3>
+
 final CsvParser beanParser =
-    org.shimomoto.yakety.csv.CsvParserFactory.toBeans(config)
+        CsvParserFactory.toBeans(config)
 
 final Stream<MyAggregate> aggregates =
-    beanParser.parse(new FileInputSream(new File("that_data.csv")))
+        beanParser.parse(new File("that_data.csv"))
 
 -----------------------------------------------------------
+<1> Must implement `org.shimomoto.yakety.csv.api.ColumnDefinition` and have a common interface with the columns bellow.
+<2> Must implement `org.shimomoto.yakety.csv.api.ColumnDefinition` and have a common interface with the index above.
+<3> Must implement BeanAssembly interface; it is responsible for coercing the values from String and assign to POJO field, all done without throwing exceptions.
 
 === TL;DR
 
-Read the contents of link:src/integrationTest/groovy/org/shimomoto/yakety/csv/MarvelIT.groovy[MarvelIT.groovy] are creating and using multiple parsers.
+Snippets are not real life examples?! Ok, read the contents of link:src/integrationTest/groovy/org/shimomoto/yakety/csv/MarvelIT.groovy[MarvelIT.groovy], it is creating multiple parsers using different approaches and it does process some data for close inspection.
 
 If you just want to read from the test results:
 [source, shell]
