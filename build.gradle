@@ -81,6 +81,7 @@ test {
 }
 
 integrationTest {
+    maxHeapSize = "4096m"
     testLogging {
         events 'passed', 'skipped', 'failed'
     }

@@ -32,6 +32,6 @@ class QuotedLinesSplitterIT extends Specification {
 		def lines = new QuotedLinesSplitter('\n' as char, '"' as char)
 
 		expect:
-		lines.parse(getZippedResourceInputStream('./dados-estatisticos.zip')).count() == 891742
+		lines.parse(getZippedResourceInputStream('./sales_records_1m.zip')).count() == 1000001
 	}
 }
