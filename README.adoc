@@ -11,9 +11,12 @@ endif::[]
 
 = yakety-csv
 
-The yakety-csv or _Yet-Another-Know-Everything-Tentative-Yap-CSV_ library.
-It should work with any character separator, so `,`, `;` and `tabs`; even custom separators.
+The yakety-csv or _Yet-Another-Know-Everything-Tentative-Yap-CSV_ Java library. +
+It should work with any field character separator, so `,`, `;` and `tabs`; even custom separators. +
 At this point it only works with single character line break: `\n`, `\r` or custom single character. Soon support for Windows `\r\n` will be added.
+
+It is meant to be configured and only require little coding for usage. Also, the main feature is to parse the file lazily; keeping memory usage low even while parsing GB long files.
+
 
 IMPORTANT: There are plenty implementations out there, please look for them, this is an exercise.
 
@@ -24,25 +27,25 @@ toc::[]
 * Fully functional, Java Stream based API
 * Configuration over code: +
 "`library user defines rules not process`"
-** Columns are defined for reuse (enum?)
-* Full support to RFC4180 both strict and non-strict
+** Columns are defined for reuse (Recommendation to use an enum)
+* At some later point, full support to RFC4180 both strict and non-strict
 * Support for different locales
 * Support for quoted values
 * On parsing:
 ** _Step 1_ list of ordered string values
 ** _Step 2_ list of string values by key
 ** _Step 3_ nullable values
-
-=== Bucket list
-
-* on parsing:
 ** _Step 4_ basic type coercion from string
 ** _Step 5_ Boxed variation on basic types
 ** _Step 6_ Support for date, time, datetime (timezone or not)
-** _Step 7_ assembled value object __(maybe?)__
-* Caching of parsing results (denormalized files tend to repeat a lot).
-* Support for custom separators, line breaks and quotes __(maybe?)__
+** _Step 7_ assembled value object
+
+=== Bucket list
+
+* Caching of parsed results (denormalized files tend to repeat a lot, memoized field parsing may save time in some cases).
+* Support for custom line breaks that are more than one character long
 * in case there is a coercion error, return a marker that point to file, line, field where problem happened.
+* replace apache validation library with own parser and include a formatter parameter that is not recreated on every call
 
 == Release Plans
 
@@ -51,16 +54,35 @@ toc::[]
 * `v0.2.X` - Enable column configuration
 * `v0.3.X`?- Proper handle of quotes
 * `v1.0.X` - stream Map.Entry of String values by column (RFC4180)
-* `v1.1.X` - nullable columns (map stream cannot take null values)
-* `v1.2.X` - proper limited parsing of int and double
-* `v1.3.X` - proper parsing of long and float
-* `v1.4.X` - proper parsing to Boxed numbers
-* `v1.5.X` - proper parsing of Date, Time and DateTime
-* `v1.6.X` - proper parsing of BigInteger and BigDecimal
-* `v1.7.X` - support to domain values (enum) parsing
-* `v2.0.0` - custom file formats
-* `v2.1.0` - custom parsers
-* `v3.0.0` - marker pointing to location where parsing failed instead of error
+* [.line-through]#`v1.1.X` - nullable columns (map stream cannot take null values)#
+* [.line-through]#`v1.2.X` - proper limited parsing of int and double#
+* [.line-through]#`v1.3.X` - proper parsing of long and float#
+* [.line-through]#`v1.4.X` - proper parsing to Boxed numbers#
+* [.line-through]#`v1.5.X` - proper parsing of Date, Time and DateTime#
+* [.line-through]#`v1.6.X` - proper parsing of BigInteger and BigDecimal#
+* [.line-through]#`v1.7.X` - support to domain values (enum) parsing#
+* `v2.0.0` - Populate a java bean from the textual field by column map, includes:
+    - safe parsing of standard nullable types: Integer, Long, Float, Double, BigInteger, BigDecimal, LocalDate, LocalDateTime, LocalTime.
+    - parsing of domain-based values backed by enums;
+    - API for custom field parsing;
+    - API that joins field parser and map's key lookup;
+    - any field that fails to be parsed is null;
+    - all API avoids exceptions, so the stream is never broken;
+    - API for a transformer from Map<K, String> to java bean.
+    - API for indexed/id'ed beans
+* `v3.0.0` - Adding feature to identify parsing problems, includes:
+    - Removal of all deprecated API;
+    - implementation of Either;
+    - a new parser and bean assembly that uses Either as output;
+    - a new interface to represent a problem parsing a field, which can be applied along with ColumnDefinition;
+    - introduction of result expectation vs actual result;
+    - marker pointing to location where parsing failed.
+    - generate a digest based unique id for the source file, use it as identifier
+* `v4.0.0` - first API stable version, includes:
+    - optimizations
+    - extra logging
+    - integration test comments and documentation
+    - package publication
 
 == Tasks
 
@@ -77,9 +99,9 @@ toc::[]
 - [x] configurable csv columns to stream of String fieldByColumnName maps
 - [x] indexed row value as field in map
 - [x] use dynamic programming to check if line break is within quotes, ignore it if it is. should consume large files without blowing up the stack.
-- [ ] parser localization
-- [ ] column definition map to expected type (string for now)
-- [ ] from the map result apply identity type coercion to bean
+- [x] parser localization
+- [x] column definition map to expected type (string for now)
+- [x] from the map result apply identity type coercion to bean
 - [ ] add coercion checks with bad results as separate dataset from raw values
 - [ ] add null constraints
 - [ ] configurable csv columns with type coercion (all types)
@@ -99,7 +121,7 @@ org.gradle.caching=true
 org.gradle.daemon.idletimeout=1800000
 org.gradle.java.home=/home/user/.sdkman/candidates/java/14.0.2-open # <1>
 -----------------------------------------------------------
-<1> your own path for the JDK 15
+<1> your own path for the JDK 14
 
 === _TL;DR_
 
@@ -118,13 +140,16 @@ The concept usage is that you are either:
 
 [source, java]
 -----------------------------------------------------------
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
+import org.shimomoto.yakety.csv.CsvParserFactory;
+
 final FileFormatConfiguration config =
-    FileFormatConfiguration.builder().build()
+        FileFormatConfiguration.builder().build()
 final CsvParser textParser =
-    org.shimomoto.yakety.csv.CsvParserFactory.toText(config)
+        CsvParserFactory.toText(config)
 
 final Stream<List<Stream>> textResults =
-    textParser.parse(new FileInputSream(new File("that_data.csv")))
+    textParser.parse(new File("that_data.csv"))
 -----------------------------------------------------------
 
 === Simple CSV to `Stream<Map<String,String>>`
@@ -135,19 +160,56 @@ It is purely positional (does not check if first field matches first header colu
 
 [source, java]
 -----------------------------------------------------------
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
+import org.shimomoto.yakety.csv.CsvParserFactory;
+
 final FileFormatConfiguration config =
-    FileFormatConfiguration.builder().build()
+        FileFormatConfiguration.builder()
+            .indexColumn("#")
+            .columns(List.of("colA","colB","colC"))
+            .build()
 final CsvParser indexedMapParser =
-    org.shimomoto.yakety.csv.CsvParserFactory.toRowIndexedTextMap(config, "#", List.of("colA","colB","colC"))
+        CsvParserFactory.toRowIndexedTextMap(config)
 
 final Stream<Map<String,String>> textResults =
-    indexedMapParser.parse(new FileInputSream(new File("that_data.csv")))
+    indexedMapParser.parse(new File("that_data.csv"))
 
 -----------------------------------------------------------
 
+=== Simple CSV to `Stream<?>` where `?` is a POJO
+
+It builds upon the fields by column map with a dynamic index, those results are used to build a Java Bean.
+
+A transformer from `Stream<Map<? extends ColumnDefinition,String>>` to whatever aggregate is to be used is needed.
+
+[source, java]
+-----------------------------------------------------------
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
+import org.shimomoto.yakety.csv.CsvParserFactory;
+
+final FileFormatConfiguration config =
+        FileFormatConfiguration.builder()
+            .indexColumn(MyVirtualColumns.INDX) // <1>
+            .columns(MyColumns.values()) // <2>
+            .build()
+
+final BeanAssembly<MyColumns, MyAggregate> transformer =
+    new MyTransformer(Locale.EN)  // <3>
+
+final CsvParser beanParser =
+        CsvParserFactory.toBeans(config)
+
+final Stream<MyAggregate> aggregates =
+        beanParser.parse(new File("that_data.csv"))
+
+-----------------------------------------------------------
+<1> Must implement `org.shimomoto.yakety.csv.api.ColumnDefinition` and have a common interface with the columns bellow.
+<2> Must implement `org.shimomoto.yakety.csv.api.ColumnDefinition` and have a common interface with the index above.
+<3> Must implement BeanAssembly interface; it is responsible for coercing the values from String and assign to POJO field, all done without throwing exceptions.
+
 === TL;DR
 
-Read the contents of link:src/integrationTest/groovy/org/shimomoto/yakety/csv/MarvelIT.groovy[MarvelIT.groovy] are creating and using multiple parsers.
+Snippets are not real life examples?! Ok, read the contents of link:src/integrationTest/groovy/org/shimomoto/yakety/csv/MarvelIT.groovy[MarvelIT.groovy], it is creating multiple parsers using different approaches and it does process some data for close inspection.
 
 If you just want to read from the test results:
 [source, shell]
@@ -163,6 +225,8 @@ then open link:build/reports/spock-reports/integrationTest/index.html[], these a
 `String.split(/pattern/, -1)` works correctly (empty fields show up) but takes a `String` instead of `Pattern`; the `Pattern.split(/string/, -1)` works when the number of fields is unknown; when the number of fields is known just pass the number instead of a negative.
 . [.line-through]#Regular expressions with matches and groups take more processing power, the lookahead doesn't and works as would the index based string walk.# +
 The regular expression break by line blows up the stack; the solution I can think of is to consume lines, then check if there is an open quote, consume another line until all open quotes are closed, then it would be better to just already consume fields while at that.
+. Java Pattern class cannot be used on hash or equals 🤷.
+. Apache validation library recreates Formatter on every call, so it does what is needed (no exception while parsing) but may degrade performance on large volumes.
 
 == Questions
 

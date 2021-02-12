@@ -6,6 +6,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.shimomoto.yakety.csv.api.CsvParser;
+import org.shimomoto.yakety.csv.config.ConfigChecker;
+import org.shimomoto.yakety.csv.config.FileFormatConfiguration;
 
 import java.io.File;
 import java.io.InputStream;
@@ -18,11 +20,14 @@ import java.util.stream.Stream;
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
 class CsvToTextParser extends BaseCsvParser<Stream<List<String>>> implements CsvParser<Stream<List<String>>> {
-	private CsvToTextParser(@NotNull final FileFormatConfiguration configuration) {
+	private CsvToTextParser(@NotNull final FileFormatConfiguration<?> configuration) {
 		super(configuration);
 	}
 
-	public static CsvToTextParser from(final @NotNull FileFormatConfiguration config) {
+	public static CsvToTextParser from(final @NotNull FileFormatConfiguration<?> config) {
+		if(!ConfigChecker.isValidForSimple(config)) {
+			throw new IllegalArgumentException("Invalid config");
+		}
 		return new CsvToTextParser(config);
 	}
 

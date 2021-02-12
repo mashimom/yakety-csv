@@ -1,4 +1,4 @@
-package configuration.marvel;
+package configuration.marvel.csv;
 
 import configuration.marvel.api.IMarvelUniverseColumn;
 import lombok.AccessLevel;
@@ -14,10 +14,11 @@ public final class MarvelUniverseIndexColumn implements IMarvelUniverseColumn {
 	}
 
 	int order = -1;
-	String name = "_";
+	String displayName = "_";
+	boolean nullable = false;
 
 	@Override
 	public String toString() {
-		return name;
+		return displayName;
 	}
 }

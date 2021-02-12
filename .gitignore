@@ -118,4 +118,5 @@ fabric.properties
 /lib/src/main/groovy/
 /lib/src/test/java/
 /tmp/
-!/src/integrationTest/resources/org/shimomoto/yakety/csv/dados-estatisticos.zip
+!/src/integrationTest/resources/org/shimomoto/yakety/csv/sales_records_1m.zip
+!/src/integrationTest/resources/org/shimomoto/yakety/csv/by_city_monthly.zip

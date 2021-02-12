@@ -17,12 +17,12 @@ import java.util.stream.Stream;
 @EqualsAndHashCode
 @Getter(AccessLevel.PROTECTED)
 @Slf4j
-class QuotedLineSplitter {
+class QuotedLinesSplitter {
 	//TODO: only works with single char linebreak (no windows format yet) and single char quote
 	int lineBreak;
 	int quote;
 
-	QuotedLineSplitter(final char lineBreak, final char quote) {
+	QuotedLinesSplitter(final char lineBreak, final char quote) {
 		this.lineBreak = (int) lineBreak;
 		this.quote = (int) quote;
 	}

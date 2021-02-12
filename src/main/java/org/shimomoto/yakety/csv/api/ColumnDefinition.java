@@ -1,16 +1,20 @@
 package org.shimomoto.yakety.csv.api;
 
-public interface ColumnDefinition {
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+
+public interface ColumnDefinition extends HasDisplayName {
 
 	int getOrder();
 
-	String getName();
+	@NotNull String getDisplayName();
 
-	default boolean mustTrim() {
-		return false;
-	}
+	boolean isNullable();
 
-	default boolean quoted() {
-		return false;
+	@Nullable
+	default String get(@NotNull final Map<? extends ColumnDefinition, String> map) {
+		return map.get(this);
 	}
 }
