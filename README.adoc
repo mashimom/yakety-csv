@@ -1,0 +1,80 @@
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+:source-highlighter: rouge
+:toc:
+:toc-placement!:
+
+= yakety-validation
+
+The *yakety-validation* or _Yet-Another-Know-Everything-Tentative-Yap-Validation_ Java library. +
+The idea is to create various simple validation rules that may return a violation reference (indication of what is wrong); opposed to a single check that can only tell it is wrong but not what specifically.
+
+toc::[]
+
+== Features
+
+. A validation then is made of 3 components:
+** the predicate that accepts a valid value aspect;
+** a function, that allows you to get the value into the predicate;
+** a violation reference, by design if the validation rule is immutable, then it can itself be the violation reference.
+
+=== Bucket list
+
+. Either implementation, to hold either violations or the subject
+
+== Release Plans
+
+* `v0.0.X` - empty project that compiles
+* `v0.1.0` - implementation of either
+
+== Tasks
+
+. setup project:
+* [x] gradle
+* [x] spock tests
+* [x] spock integration tests
+* [x] git ignores
+. functionalities:
+* [ ] validation is a predicate wrapper
+** invalid when predicate fails to accept
+* [ ] the validation holds a function to get the value from the aggregate into the predicate.
+* [ ] validation returns `Violation` reference on failure
+** [ ] Violation reference can be anything (String, Number), but if the validations are immutable by design the validation itself can be a violation;
+* [ ] Stream API support:
+** [ ] stream of validations, then filter/remove them when accepting/invalidating a subject, resulting on a stream of violations;
+** [ ] with a list of violations create a map from subjects' identifiers to violations found on the subject.
+* [ ] Violation can be used to generate a textual explanation of the problem found
+
+== How to build
+
+=== Environment setup requirements
+
+Java 14 is needed, get it with SDKMan Gradle configuration recommended, ~/.gradle/gradle.properties:
+
+[source,properties]
+-----------------------------------------------------------
+org.gradle.parallel=true
+org.gradle.jvmargs=-Xmx2048M
+org.gradle.caching=true
+org.gradle.daemon.idletimeout=1800000
+org.gradle.java.home=/home/user/.sdkman/candidates/java/14.0.2-open # <1>
+-----------------------------------------------------------
+<1> your own path for the JDK 14
+
+=== _TL;DR_
+
+[source,shell]
+-----------------------------------------------------------
+./gradlew
+-----------------------------------------------------------
+
+== How to use
+
+== Learning notes
+
+== Questions
