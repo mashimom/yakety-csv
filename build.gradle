@@ -1,14 +1,13 @@
-
 plugins {
     id 'build-dashboard'
-    id 'com.github.ben-manes.versions' version '0.36.0'
+    id 'com.github.ben-manes.versions' version '0.39.0'
     id 'com.palantir.git-version' version '0.12.3'
     id 'groovy'
     id 'idea'
     id 'jacoco'
     id 'java-library'
     id 'nebula.maven-publish' version '17.3.2'
-    id 'nebula.project' version '7.0.9'
+    id 'nebula.project' version '8.0.0'
     id 'project-report'
 }
 
@@ -21,8 +20,8 @@ group = 'org.shimomoto'
 //noinspection GroovyAssignabilityCheck
 version gitVersion()
 //noinspection GroovyUnusedAssignment
-sourceCompatibility = JavaVersion.VERSION_14
-targetCompatibility = JavaVersion.VERSION_14
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 facets {
     integrationTest {
@@ -38,41 +37,45 @@ configurations {
         extendsFrom testImplementation
     }
     integrationTestRuntime {
-        extendsFrom testRuntime
+        extendsFrom testRuntimeOnly
     }
 }
 repositories {
-    jcenter()
+    google()
     mavenCentral()
 }
 
 dependencies {
-    annotationProcessor 'org.jetbrains:annotations:20.1.0'
-    annotationProcessor 'org.projectlombok:lombok:1.18.16'
-    compileOnly 'org.jetbrains:annotations:20.1.0'
-    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.jetbrains:annotations:21.0.1'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    compileOnly 'org.jetbrains:annotations:21.0.1'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
 
     implementation 'com.codepoetics:protonpack:1.16'
     implementation 'ch.qos.logback:logback-classic:1.2.3'
     implementation 'org.apache.commons:commons-text:1.9'
     implementation 'commons-validator:commons-validator:1.7'
 
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.codehaus.groovy:groovy-all:2.5.14'
+//    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.8'
     testImplementation 'org.hamcrest:hamcrest-core:2.2'
-    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
-    testImplementation('com.athaydes:spock-reports:1.8.0') {
+    testImplementation platform('org.spockframework:spock-bom:2.0-groovy-3.0')
+    testImplementation 'org.spockframework:spock-core'
+    testImplementation 'org.spockframework:spock-junit4'
+    testImplementation('com.athaydes:spock-reports:2.0-groovy-3.0') {
         transitive = false
     }
 
-    testRuntime 'cglib:cglib-nodep:3.2.12'
-    testRuntime 'org.objenesis:objenesis:2.6'
+//    testRuntimeOnly 'cglib:cglib-nodep:3.2.12'
+    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.11.1'
+    testRuntimeOnly 'org.objenesis:objenesis:3.2'
 
-    integrationTestCompileOnly 'org.projectlombok:lombok:1.18.16'
-    integrationTestCompileOnly 'org.jetbrains:annotations:20.1.0'
+    integrationTestCompileOnly 'org.projectlombok:lombok:1.18.20'
+    integrationTestCompileOnly 'org.jetbrains:annotations:21.0.1'
 }
 
 test {
+    useJUnitPlatform()
     testLogging {
 //        events 'passed', 'skipped', 'failed'
         events 'failed'
@@ -81,6 +84,7 @@ test {
 }
 
 integrationTest {
+    useJUnitPlatform()
     maxHeapSize = "4096m"
     testLogging {
         events 'passed', 'skipped', 'failed'
@@ -97,6 +101,8 @@ jacocoTestReport {
     }
     dependsOn test
 }
+
+javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 
 def isNonStable = { String version ->
     def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }

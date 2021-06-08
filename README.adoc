@@ -15,7 +15,8 @@ The yakety-csv or _Yet-Another-Know-Everything-Tentative-Yap-CSV_ Java library. 
 It should work with any field character separator, so `,`, `;` and `tabs`; even custom separators. +
 At this point it only works with single character line break: `\n`, `\r` or custom single character. Soon support for Windows `\r\n` will be added.
 
-It is meant to be configured and only require little coding for usage. Also, the main feature is to parse the file lazily; keeping memory usage low even while parsing GB long files.
+It is meant to be configured and only require little coding for usage.
+Also, the main feature is to parse the file lazily; keeping memory usage low even while parsing GB long files.
 
 
 IMPORTANT: There are plenty implementations out there, please look for them, this is an exercise.
@@ -111,7 +112,7 @@ toc::[]
 
 === Environment setup requirements
 
-Java 14 is needed, get it with SDKMan Gradle configuration recommended, ~/.gradle/gradle.properties:
+Java 16+ is needed, get it with SDKMan Gradle configuration recommended, ~/.gradle/gradle.properties:
 
 [source,properties]
 -----------------------------------------------------------
@@ -119,9 +120,9 @@ org.gradle.parallel=true
 org.gradle.jvmargs=-Xmx2048M
 org.gradle.caching=true
 org.gradle.daemon.idletimeout=1800000
-org.gradle.java.home=/home/user/.sdkman/candidates/java/14.0.2-open # <1>
+org.gradle.java.home=/home/user/.sdkman/candidates/java/16.0.1-open # <1>
 -----------------------------------------------------------
-<1> your own path for the JDK 14
+<1> your own path for the JDK 16+
 
 === _TL;DR_
 

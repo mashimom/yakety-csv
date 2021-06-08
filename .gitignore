@@ -120,3 +120,4 @@ fabric.properties
 /tmp/
 !/src/integrationTest/resources/org/shimomoto/yakety/csv/sales_records_1m.zip
 !/src/integrationTest/resources/org/shimomoto/yakety/csv/by_city_monthly.zip
+./.local/*
